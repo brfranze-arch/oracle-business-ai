@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Oracle Business AI</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #172554, #020617 65%);
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      padding-left: 250px;
+    }
+
+    header {
+      padding: 28px;
+      background: rgba(2, 6, 23, 0.9);
+      border-bottom: 1px solid #2563eb;
+    }
+
+    h1 {
+      margin: 0;
+      color: #38bdf8;
+    }
+
+    main {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid #2563eb;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 0 28px rgba(56, 189, 248, 0.14);
+    }
+
+    .full {
+      grid-column: 1 / 3;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      border: none;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #38bdf8;
+      color: #020617;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .result {
+      background: #020617;
+      border: 1px solid #334155;
+      padding: 14px;
+      border-radius: 14px;
+      margin-top: 10px;
+    }
+
+    .FORTE, .BUONO, .OTTIMO, .ECCELLENTE {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .STABILE {
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    .FRAGILE, .ATTENZIONE {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .CRITICO {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 13px;
+  margin: 4px 4px 4px 0;
+}
+
+.badge-green {
+  background: rgba(34, 197, 94, 0.18);
+  color: #22c55e;
+  border: 1px solid #22c55e;
+}
+
+.badge-blue {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+}
+
+.badge-yellow {
+  background: rgba(250, 204, 21, 0.18);
+  color: #facc15;
+  border: 1px solid #facc15;
+}
+
+.badge-red {
+  background: rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.progress-wrap {
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  height: 16px;
+  overflow: hidden;
+  margin: 8px 0 14px 0;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #22c55e);
+  animation: fillBar 1.2s ease-out forwards;
+}
+
+@keyframes fillBar {
+  from { width: 0%; }
+  to { width: var(--target-width); }
+}
+
+.timeline-item {
+  border-left: 3px solid #38bdf8;
+  padding-left: 14px;
+  margin-bottom: 16px;
+}
+
+.small-muted {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.chart-box {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 220px;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.chart-col {
+  min-width: 48px;
+  text-align: center;
+}
+
+.chart-bar {
+  width: 100%;
+  height: 0%;
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(180deg, #38bdf8, #22c55e);
+  animation: growChart 1.2s ease-out forwards;
+}
+
+@keyframes growChart {
+  from { height: 0%; }
+  to { height: var(--bar-height); }
+}
+
+.chart-label {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+.chart-value {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.chart-card {
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.chart-title {
+  color: #38bdf8;
+  margin-bottom: 12px;
+}
+
+.mini-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 180px;
+  overflow-x: auto;
+}
+
+.mini-bar-col {
+  min-width: 42px;
+  text-align: center;
+}
+
+.mini-bar {
+  width: 100%;
+  height: 0%;
+  border-radius: 10px 10px 0 0;
+  background: linear-gradient(180deg, #38bdf8, #22c55e);
+  animation: growChart 1.2s ease-out forwards;
+}
+
+.line-chart {
+  width: 100%;
+  height: 220px;
+}
+
+.line-path {
+  fill: none;
+  stroke: #38bdf8;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 1.6s ease-out forwards;
+}
+
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+.cyber-card{
+  background:#020617;
+  border:1px solid #334155;
+  border-radius:18px;
+  padding:18px;
+  margin-top:16px;
+}
+
+.cyber-score{
+  font-size:42px;
+  font-weight:bold;
+  color:#38bdf8;
+}
+
+.cyber-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
+}
+
+.cyber-metric{
+  background:#0f172a;
+  border-radius:12px;
+  padding:14px;
+}
+
+.cyber-title{
+  color:#94a3b8;
+  font-size:13px;
+}
+
+.cyber-value{
+  font-size:26px;
+  font-weight:bold;
+  margin-top:6px;
+}
+
+.user-badge {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid #22c55e;
+  color: #22c55e;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.hidden {
+  display: none;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: rgba(2, 6, 23, 0.96);
+  border-right: 1px solid #2563eb;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  color: #38bdf8;
+}
+
+.tab-btn {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+  background: #0f172a;
+  color: white;
+  border: 1px solid #334155;
+}
+
+.tab-btn.active {
+  background: #38bdf8;
+  color: #020617;
+}
+
+.tab-section {
+  display: none;
+}
+
+.tab-section.active {
+  display: block;
+}
+
+.main-content {
+  margin-left: 260px;
+  padding: 20px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.sidebar-logo {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.sidebar-logo h1 {
+  color: #38bdf8;
+  margin: 0;
+}
+
+.sidebar-logo p {
+  color: #94a3b8;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Oracle Business AI</h1>
+  <p>Dashboard AI per finanza, gestione aziendale, cyber risk e previsioni.</p>
+</header>
+
+<div class="sidebar" style="position:fixed; left:0; top:0; width:230px; z-index:999;">
+
+  <div class="sidebar-logo">
+    <h1>Oracle AI</h1>
+    <p>Business Intelligence Platform</p>
+  </div>
+
+  <button class="tab-btn active"
+          data-tab="tab-executive"
+          onclick="showTab('tab-executive')">
+    🚀 Executive
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-daily"
+          onclick="showTab('tab-daily')">
+    🧠 Daily Brief
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-finance"
+          onclick="showTab('tab-finance')">
+    💰 Finance
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-customer"
+          onclick="showTab('tab-customer')">
+    👥 Customer
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-compliance"
+          onclick="showTab('tab-compliance')">
+    📄 Compliance
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-cyber"
+          onclick="showTab('tab-cyber')">
+    🛡 Cyber
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-assistant"
+          onclick="showTab('tab-assistant')">
+    🤖 Assistant
+  </button>
+
+  <button class="tab-btn"
+          data-tab="tab-import"
+          onclick="showTab('tab-import')">
+    📂 Import AI
+  </button>
+
+</div>
+
+<section class="card full" style="margin:24px;">
+  <h2>🔐 Accesso Oracle Business AI</h2>
+
+  <div class="chart-grid">
+    <div>
+      <h3>Login</h3>
+      <input id="loginEmail" placeholder="Email">
+      <input id="loginPassword" type="password" placeholder="Password">
+      <button onclick="loginUser()">Login</button>
+    </div>
+
+    <div>
+      <h3>Registrazione</h3>
+      <input id="registerName" placeholder="Nome">
+      <input id="registerEmail" placeholder="Email">
+      <input id="registerPassword" type="password" placeholder="Password">
+      <button onclick="registerUser()">Registrati</button>
+    </div>
+  </div>
+
+  <button onclick="logoutUser()">Logout</button>
+
+  <div id="authResult"></div>
+  <div id="currentUserBox"></div>
+</section>
+
+<section class="card full">
+  <h2>🚀 Oracle Executive Dashboard</h2>
+
+  <input id="executiveCompanyId" placeholder="ID azienda">
+
+  <button onclick="loadExecutiveDashboard()">
+    Carica Dashboard Executive
+  </button>
+
+  <div id="executiveResult"></div>
+</section>
+
+<section class="card full">
+  <h2>🧠 Oracle Daily Brief AI</h2>
+
+  <input id="dailyBriefCompanyId" placeholder="ID azienda">
+
+  <button onclick="loadDailyBrief()">
+    Genera Daily Brief
+  </button>
+
+  <div id="dailyBriefResult"></div>
+</section>
+
+<main id="appMain" class="hidden">
+
+  <section class="card">
+    <h2>1. Crea azienda</h2>
+    <input id="companyName" placeholder="Nome azienda">
+    <input id="sector" placeholder="Settore">
+    <input id="country" placeholder="Paese">
+    <input id="domain" placeholder="Dominio opzionale">
+    <button onclick="createCompany()">Crea azienda</button>
+    <div id="companyResult"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Registra entrata</h2>
+    <input id="companyIdRevenue" placeholder="ID azienda">
+    <input id="amount" type="number" placeholder="Importo">
+    <select id="paymentMethod">
+      <option value="contanti">Contanti</option>
+      <option value="pos">POS</option>
+      <option value="bonifico">Bonifico</option>
+      <option value="digitale">Digitale</option>
+    </select>
+    <input id="category" placeholder="Categoria">
+    <textarea id="note" placeholder="Nota"></textarea>
+    <button onclick="addRevenue()">Aggiungi entrata</button>
+    <div id="revenueResult"></div>
+  </section>
+
+  <section class="card">
+    <h2>3. Aziende</h2>
+    <button onclick="loadCompanies()">Carica aziende</button>
+    <div id="companies"></div>
+  </section>
+
+  <section class="card">
+    <h2>4. Finance Oracle AI</h2>
+    <input id="companyIdFinance" placeholder="ID azienda">
+    <button onclick="loadFinanceSummary()">Riepilogo entrate</button>
+    <button onclick="analyzeFinance()">Analisi AI Finance</button>
+    <div id="financeResult"></div>
+  </section>
+
+  <section class="card full">
+    <h2>5. Oracle Score Centrale</h2>
+    <input id="companyIdOracle" placeholder="ID azienda">
+    <button onclick="loadOracleScore()">Calcola Oracle Score</button>
+    <div id="oracleResult"></div>
+  </section>
+
+  <section class="card full">
+    <h2>6. Insights AI salvati</h2>
+    <input id="companyIdInsights" placeholder="ID azienda">
+    <button onclick="loadInsights()">Carica Insights</button>
+    <div id="insights"></div>
+  </section>
+
+  <section class="card full">
+    <h2>7. Business Health AI</h2>
+    <input id="companyIdHealth" placeholder="ID azienda">
+    <button onclick="analyzeBusinessHealth()">Analizza stato aziendale</button>
+    <button onclick="loadBusinessHealth()">Carica report salvati</button>
+    <div id="businessHealthResult"></div>
+  </section>
+
+  <section class="card full">
+    <h2>8. Customer Oracle AI</h2>
+
+    <h3>Crea cliente</h3>
+    <input id="customerCompanyId" placeholder="ID azienda">
+    <input id="customerName" placeholder="Nome cliente">
+    <input id="customerEmail" placeholder="Email">
+    <input id="customerPhone" placeholder="Telefono">
+    <input id="customerType" placeholder="Tipo cliente: privato, business, premium">
+    <textarea id="customerNotes" placeholder="Note cliente"></textarea>
+    <button onclick="createCustomer()">Crea cliente</button>
+
+    <h3>Lista clienti</h3>
+    <input id="customersListCompanyId" placeholder="ID azienda">
+    <button onclick="loadCustomers()">Carica clienti</button>
+
+    <h3>Customer AI</h3>
+    <input id="customerAiCompanyId" placeholder="ID azienda">
+    <button onclick="analyzeCustomerAi()">Analizza clienti con AI</button>
+    <button onclick="loadCustomerInsights()">Carica Customer Insights</button>
+
+    <div id="customerResult"></div>
+  </section>
+
+<section class="card full">
+  <h2>9. Compliance Oracle AI</h2>
+
+  <h3>Aggiungi elemento Compliance</h3>
+  <input id="complianceCompanyId" placeholder="ID azienda">
+  <input id="complianceTitle" placeholder="Titolo">
+  <input id="complianceType" placeholder="Tipo: GDPR, sicurezza, licenza, assicurazione">
+  <select id="complianceStatus">
+    <option value="completato">Completato</option>
+    <option value="pendente">Pendente</option>
+  </select>
+  <input id="complianceDueDate" placeholder="Scadenza YYYY-MM-DD">
+  <textarea id="complianceNotes" placeholder="Note"></textarea>
+  <button onclick="createComplianceItem()">Aggiungi Compliance</button>
+
+  <h3>Analisi Compliance</h3>
+  <input id="complianceAiCompanyId" placeholder="ID azienda">
+  <button onclick="analyzeComplianceAi()">Analizza Compliance</button>
+  <button onclick="loadComplianceInsights()">Carica Compliance Insights</button>
+
+  <div id="complianceResult"></div>
+</section>
+
+<section class="card full">
+  <h2>10. Oracle Assistant AI</h2>
+
+  <input id="assistantCompanyId" placeholder="ID azienda">
+  <textarea id="assistantQuestion" placeholder="Fai una domanda: es. Come sta andando la mia azienda? Qual è il rischio principale? Quanto ho incassato?"></textarea>
+
+  <button onclick="askOracleAssistant()">Chiedi a Oracle Assistant</button>
+
+  <div id="assistantResult"></div>
+</section>
+
+<section class="card full">
+  <h2>11. 🧠 Oracle Memory AI</h2>
+
+  <input id="memoryCompanyId" placeholder="ID azienda">
+  <button onclick="loadOracleMemory()">Carica memoria AI</button>
+
+  <div id="memoryResult"></div>
+</section>
+
+<section class="card full">
+  <h2>12. 📈 Oracle Timeline AI</h2>
+
+  <input id="timelineCompanyId" placeholder="ID azienda">
+  <button onclick="loadOracleTimeline()">Carica grafico storico</button>
+
+  <div id="timelineResult"></div>
+</section>
+
+<section class="card full">
+  <h2>13. 📊 Oracle Advanced Charts</h2>
+
+  <input id="advancedChartsCompanyId" placeholder="ID azienda">
+  <button onclick="loadAdvancedCharts()">Carica grafici avanzati</button>
+
+  <div id="advancedChartsResult"></div>
+</section>
+
+<section class="card full">
+
+<h2>14. 🛡 Cyber Oracle AI</h2>
+
+<input
+  id="cyberCompanyId"
+  placeholder="ID azienda"
+/>
+
+<button onclick="runCyberAI()">
+  Esegui Cyber Oracle AI
+</button>
+
+<div id="cyberResult"></div>
+
+</section>
+
+<section class="card full">
+  <h2>15. 📈 Cyber Timeline AI</h2>
+
+  <input id="cyberTimelineCompanyId" placeholder="ID azienda">
+
+  <button onclick="loadCyberTimeline()">
+    Carica Cyber Timeline
+  </button>
+
+  <div id="cyberTimelineResult"></div>
+</section>
+
+<section class="card full">
+  <h2>16. 🧩 Cyber Data Manager</h2>
+
+  <div class="cyber-grid">
+
+    <div class="cyber-card">
+      <h3>🌐 Aggiungi Asset Cyber</h3>
+      <input id="assetCompanyId" placeholder="ID azienda">
+      <input id="assetType" placeholder="Tipo: domain, subdomain, ip, cloud">
+      <input id="assetValue" placeholder="Valore: azienda.it, api.azienda.it">
+      <input id="assetProvider" placeholder="Provider: Cloudflare, AWS, Azure, unknown">
+      <textarea id="assetTech" placeholder="Technology stack: WordPress, Nginx, Cloudflare"></textarea>
+      <textarea id="assetNotes" placeholder="Note"></textarea>
+      <button onclick="createCyberAsset()">Aggiungi Asset</button>
+    </div>
+
+    <div class="cyber-card">
+      <h3>⚠️ Aggiungi Finding</h3>
+      <input id="findingCompanyId" placeholder="ID azienda">
+      <input id="findingAssetId" placeholder="ID asset">
+      <input id="findingTitle" placeholder="Titolo finding">
+      <input id="findingCategory" placeholder="Categoria: ssl, dns, headers, cve">
+      <select id="findingSeverity">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+        <option value="critical">Critical</option>
+      </select>
+      <textarea id="findingDescription" placeholder="Descrizione"></textarea>
+      <textarea id="findingRecommendation" placeholder="Raccomandazione"></textarea>
+      <button onclick="createCyberFinding()">Aggiungi Finding</button>
+    </div>
+
+    <div class="cyber-card">
+      <h3>🚨 Aggiungi Threat</h3>
+      <input id="threatCompanyId" placeholder="ID azienda">
+      <input id="threatSource" placeholder="Fonte: NVD, CISA KEV, OSINT">
+      <input id="threatType" placeholder="Tipo: cve, ransomware, phishing">
+      <input id="threatTitle" placeholder="Titolo threat">
+      <input id="threatCve" placeholder="CVE opzionale">
+      <select id="threatSeverity">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+        <option value="critical">Critical</option>
+      </select>
+      <input id="threatScore" type="number" placeholder="Score 0-100">
+      <textarea id="threatDescription" placeholder="Descrizione"></textarea>
+      <button onclick="createCyberThreat()">Aggiungi Threat</button>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <h3>📋 Visualizza dati Cyber</h3>
+  <input id="cyberDataCompanyId" placeholder="ID azienda">
+  <button onclick="loadCyberData()">Carica Assets / Findings / Threats</button>
+
+  <div id="cyberDataResult"></div>
+</section>
+
+<section class="card full">
+  <h2>17. 📂 Oracle Import AI</h2>
+
+  <input id="importCompanyId" placeholder="ID azienda">
+  <input id="importFile" type="file" accept=".csv,.xlsx,.xls">
+
+  <button onclick="uploadRevenueFile()">Importa Entrate CSV / Excel</button>
+  <button onclick="loadImportHistory()">Carica storico import</button>
+
+  <div id="importResult"></div>
+</section>
+
+</main>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+function safe(value) {
+  return value === null || value === undefined || value === "" ? "-" : value;
+}
+
+async function createCompany() {
+  const params = new URLSearchParams({
+    name: document.getElementById("companyName").value,
+    sector: document.getElementById("sector").value,
+    country: document.getElementById("country").value,
+    domain: document.getElementById("domain").value
+  });
+
+  const res = await fetch(`${API}/api/companies?${params}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("companyResult").innerHTML = `
+    <div class="result">
+      Azienda creata.<br>
+      ID: <b>${data.id}</b><br>
+      Nome: ${data.name}
+    </div>
+  `;
+}
+
+async function addRevenue() {
+  const params = new URLSearchParams({
+    company_id: document.getElementById("companyIdRevenue").value,
+    amount: document.getElementById("amount").value,
+    payment_method: document.getElementById("paymentMethod").value,
+    category: document.getElementById("category").value,
+    note: document.getElementById("note").value
+  });
+
+  const res = await fetch(`${API}/api/revenues?${params}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("revenueResult").innerHTML = `
+    <div class="result">
+      Entrata registrata: <b>€${data.amount}</b><br>
+      Metodo: ${data.payment_method}<br>
+      Categoria: ${data.category}
+    </div>
+  `;
+}
+
+async function loadCompanies() {
+  const res = await fetch(`${API}/api/companies`);
+  const data = await res.json();
+
+  document.getElementById("companies").innerHTML = data.map(c => `
+    <div class="result">
+      <b>ID ${c.id}</b> — ${c.name}<br>
+      Settore: ${safe(c.sector)}<br>
+      Paese: ${safe(c.country)}<br>
+      Dominio: ${safe(c.domain)}
+    </div>
+  `).join("");
+}
+
+async function loadFinanceSummary() {
+  const id = document.getElementById("companyIdFinance").value;
+  const res = await fetch(`${API}/api/finance-summary/${id}`);
+  const data = await res.json();
+
+  document.getElementById("financeResult").innerHTML = `
+    <div class="result">
+      Totale: <b>€${data.total}</b><br>
+      Contanti: €${data.cash}<br>
+      POS: €${data.pos}<br>
+      Bonifico: €${data.bank}<br>
+      Digitale: €${data.digital}<br>
+      Operazioni: ${data.count}
+    </div>
+  `;
+}
+
+async function analyzeFinance() {
+  const id = document.getElementById("companyIdFinance").value;
+  const res = await fetch(`${API}/api/ai/analyze-finance/${id}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("financeResult").innerHTML = `
+    <div class="result">
+      <h3>${data.title}</h3>
+      Score: <span class="${data.level}">${data.score}</span><br>
+      Livello: <span class="${data.level}">${data.level}</span>
+      <p>${data.message}</p>
+    </div>
+  `;
+}
+
+function badgeClass(level) {
+  if (level === "ECCELLENTE" || level === "FORTE" || level === "OTTIMO" || level === "BUONO") return "badge-green";
+  if (level === "STABILE") return "badge-blue";
+  if (level === "FRAGILE" || level === "ATTENZIONE") return "badge-yellow";
+  return "badge-red";
+}
+
+function progressBar(value) {
+  const safeValue = Math.max(0, Math.min(100, Number(value || 0)));
+  return `
+    <div class="progress-wrap">
+      <div class="progress-bar" style="--target-width:${safeValue}%"></div>
+    </div>
+  `;
+}
+
+async function loadOracleScore() {
+  const id = document.getElementById("companyIdOracle").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const res = await fetch(`${API}/api/oracle-score/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  document.getElementById("oracleResult").innerHTML = `
+    <div class="result">
+
+      <h2>🏢 ${data.company_name}</h2>
+
+      <span class="badge ${badgeClass(data.level)}">
+        🏅 ${data.level}
+      </span>
+
+      <h1 style="color:#38bdf8;">
+        Oracle Score ${data.oracle_score}/100
+      </h1>
+
+      ${progressBar(data.oracle_score)}
+
+      <hr>
+
+      <h3>Moduli Oracle</h3>
+
+      <p>💰 Finance Oracle AI: <b>${data.finance_score}</b></p>
+      ${progressBar(data.finance_score)}
+
+      <p>📈 Business Health AI: <b>${data.business_health_score}</b></p>
+      ${progressBar(data.business_health_score)}
+
+      <p>🛡 Cyber Oracle AI: <b>${data.cyber_score}</b></p>
+      ${progressBar(data.cyber_score)}
+
+      <p>📄 Compliance Oracle AI: <b>${data.compliance_score}</b></p>
+      ${progressBar(data.compliance_score)}
+
+      <p>👥 Customer Oracle AI: <b>${data.customer_score}</b></p>
+      ${progressBar(data.customer_score)}
+
+      <hr>
+
+      <h3>Dati Aziendali</h3>
+
+      <span class="badge badge-blue">💶 Entrate €${data.total_revenue}</span>
+      <span class="badge badge-blue">🧾 Operazioni ${data.total_operations}</span>
+      <span class="badge badge-yellow">💵 Contanti €${data.cash}</span>
+      <span class="badge badge-green">🏦 Tracciabili €${data.traced_payments}</span>
+
+      <hr>
+
+      <h3>✅ Punti Forti</h3>
+      <ul>${data.strengths.map(x => `<li>${x}</li>`).join("") || "<li>Nessun punto forte ancora rilevato.</li>"}</ul>
+
+      <h3>⚠️ Rischi</h3>
+      <ul>${data.risks.map(x => `<li>${x}</li>`).join("") || "<li>Nessun rischio importante rilevato.</li>"}</ul>
+
+      <h3>🤖 Suggerimenti AI</h3>
+      <ul>${data.suggestions.map(x => `<li>${x}</li>`).join("") || "<li>Nessun suggerimento urgente.</li>"}</ul>
+
+    </div>
+  `;
+}
+
+async function loadInsights() {
+  const id = document.getElementById("companyIdInsights").value;
+  const res = await fetch(`${API}/api/insights/${id}`);
+  const data = await res.json();
+
+  document.getElementById("insights").innerHTML = data.map(i => `
+    <div class="result">
+      <b>${i.title}</b><br>
+      Modulo: ${i.module}<br>
+      Score: <span class="${i.level}">${i.score}</span><br>
+      Livello: <span class="${i.level}">${i.level}</span>
+      <p>${i.message}</p>
+    </div>
+  `).join("");
+}
+
+async function analyzeBusinessHealth() {
+  const id = document.getElementById("companyIdHealth").value;
+  const res = await fetch(`${API}/api/business-health/analyze/${id}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("businessHealthResult").innerHTML = `
+    <div class="result">
+      <h3>Business Health AI</h3>
+      Health Score: <span class="${data.level}">${data.health_score} / 100</span><br>
+      Livello: <span class="${data.level}">${data.level}</span><br><br>
+
+      Entrate totali: <b>€${data.revenue_total}</b><br>
+      Operazioni: ${data.operations_count}<br><br>
+
+      <b>Punto forte principale:</b>
+      <p>${data.main_strength}</p>
+
+      <b>Rischio principale:</b>
+      <p>${data.main_risk}</p>
+
+      <b>Raccomandazione AI:</b>
+      <p>${data.recommendation}</p>
+    </div>
+  `;
+}
+
+async function loadBusinessHealth() {
+  const id = document.getElementById("companyIdHealth").value;
+  const res = await fetch(`${API}/api/business-health/${id}`);
+  const data = await res.json();
+
+  document.getElementById("businessHealthResult").innerHTML = data.map(r => `
+    <div class="result">
+      <h3>Report Business Health</h3>
+      Health Score: <span class="${r.level}">${r.health_score} / 100</span><br>
+      Livello: <span class="${r.level}">${r.level}</span><br>
+      Entrate: €${r.revenue_total}<br>
+      Operazioni: ${r.operations_count}<br>
+      Creato il: ${r.created_at}<br><br>
+
+      <b>Punto forte:</b>
+      <p>${r.main_strength}</p>
+
+      <b>Rischio:</b>
+      <p>${r.main_risk}</p>
+
+      <b>Raccomandazione:</b>
+      <p>${r.recommendation}</p>
+    </div>
+  `).join("");
+}
+async function createCustomer() {
+  const params = new URLSearchParams({
+    company_id: document.getElementById("customerCompanyId").value,
+    name: document.getElementById("customerName").value,
+    email: document.getElementById("customerEmail").value,
+    phone: document.getElementById("customerPhone").value,
+    customer_type: document.getElementById("customerType").value,
+    notes: document.getElementById("customerNotes").value
+  });
+
+  const res = await fetch(`${API}/api/customers?${params}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("customerResult").innerHTML = `
+    <div class="result">
+      Cliente creato.<br>
+      ID: <b>${data.id}</b><br>
+      Nome: ${data.name}<br>
+      Tipo: ${data.customer_type}
+    </div>
+  `;
+}
+
+async function loadCustomers() {
+  const id = document.getElementById("customersListCompanyId").value;
+  const res = await fetch(`${API}/api/customers/${id}`);
+  const data = await res.json();
+
+  document.getElementById("customerResult").innerHTML = data.map(c => `
+    <div class="result">
+      <b>ID ${c.id}</b> — ${c.name}<br>
+      Email: ${safe(c.email)}<br>
+      Telefono: ${safe(c.phone)}<br>
+      Tipo: ${safe(c.customer_type)}<br>
+      Note: ${safe(c.notes)}
+    </div>
+  `).join("");
+}
+
+async function analyzeCustomerAi() {
+  const id = document.getElementById("customerAiCompanyId").value;
+  const res = await fetch(`${API}/api/customer-ai/${id}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("customerResult").innerHTML = `
+    <div class="result">
+      <h3>Customer Oracle AI</h3>
+      Customer Score: <span class="${data.level}">${data.customer_score} / 100</span><br>
+      Livello: <span class="${data.level}">${data.level}</span><br><br>
+
+      Clienti registrati: ${data.customers_count}<br>
+      Top cliente: <b>${safe(data.top_customer_name)}</b><br>
+      Fatturato top cliente: €${data.top_customer_revenue}<br><br>
+
+      <b>Analisi AI:</b>
+      <p>${data.message}</p>
+
+      <b>Raccomandazione:</b>
+      <p>${data.recommendation}</p>
+    </div>
+  `;
+}
+
+async function loadCustomerInsights() {
+  const id = document.getElementById("customerAiCompanyId").value;
+  const res = await fetch(`${API}/api/customer-insights/${id}`);
+  const data = await res.json();
+
+  document.getElementById("customerResult").innerHTML = data.map(i => `
+    <div class="result">
+      <h3>Customer Insight</h3>
+      Customer Score: <span class="${i.level}">${i.customer_score} / 100</span><br>
+      Livello: <span class="${i.level}">${i.level}</span><br>
+      Clienti: ${i.customers_count}<br>
+      Top cliente: <b>${safe(i.top_customer_name)}</b><br>
+      Fatturato top cliente: €${i.top_customer_revenue}<br>
+      Creato il: ${i.created_at}<br><br>
+
+      <b>Messaggio:</b>
+      <p>${i.message}</p>
+
+      <b>Raccomandazione:</b>
+      <p>${i.recommendation}</p>
+    </div>
+  `).join("");
+}
+
+async function createComplianceItem() {
+  const params = new URLSearchParams({
+    company_id: document.getElementById("complianceCompanyId").value,
+    title: document.getElementById("complianceTitle").value,
+    item_type: document.getElementById("complianceType").value,
+    status: document.getElementById("complianceStatus").value,
+    due_date: document.getElementById("complianceDueDate").value,
+    notes: document.getElementById("complianceNotes").value
+  });
+
+  const res = await fetch(`${API}/api/compliance-items?${params}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("complianceResult").innerHTML = `
+    <div class="result">
+      Elemento Compliance creato.<br>
+      ID: <b>${data.id}</b><br>
+      Titolo: ${data.title}<br>
+      Stato: ${data.status}<br>
+      Scadenza: ${data.due_date}
+    </div>
+  `;
+}
+
+async function analyzeComplianceAi() {
+  const id = document.getElementById("complianceAiCompanyId").value;
+  const res = await fetch(`${API}/api/compliance-ai/${id}`, { method: "POST" });
+  const data = await res.json();
+
+  document.getElementById("complianceResult").innerHTML = `
+    <div class="result">
+      <h3>Compliance Oracle AI</h3>
+      Compliance Score: <span class="${data.level}">${data.compliance_score} / 100</span><br>
+      Livello: <span class="${data.level}">${data.level}</span><br><br>
+
+      Elementi totali: ${data.total_items}<br>
+      Completati: ${data.completed_items}<br>
+      Pendenti: ${data.pending_items}<br>
+      Scaduti: ${data.expired_items}<br><br>
+
+      <b>Analisi AI:</b>
+      <p>${data.message}</p>
+
+      <b>Raccomandazione:</b>
+      <p>${data.recommendation}</p>
+    </div>
+  `;
+}
+
+async function loadComplianceInsights() {
+  const id = document.getElementById("complianceAiCompanyId").value;
+  const res = await fetch(`${API}/api/compliance-insights/${id}`);
+  const data = await res.json();
+
+  document.getElementById("complianceResult").innerHTML = data.map(i => `
+    <div class="result">
+      <h3>Compliance Insight</h3>
+      Compliance Score: <span class="${i.level}">${i.compliance_score} / 100</span><br>
+      Livello: <span class="${i.level}">${i.level}</span><br>
+      Elementi: ${i.total_items}<br>
+      Completati: ${i.completed_items}<br>
+      Pendenti: ${i.pending_items}<br>
+      Scaduti: ${i.expired_items}<br>
+      Creato il: ${i.created_at}<br><br>
+
+      <b>Messaggio:</b>
+      <p>${i.message}</p>
+
+      <b>Raccomandazione:</b>
+      <p>${i.recommendation}</p>
+    </div>
+  `).join("");
+}
+
+async function askOracleAssistant() {
+  const id = document.getElementById("assistantCompanyId").value;
+  const question = document.getElementById("assistantQuestion").value;
+
+  const token = localStorage.getItem("oracle_token");
+
+  const params = new URLSearchParams({
+    question: question
+  });
+
+  const res = await fetch(`${API}/api/oracle-assistant/${id}?${params}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("assistantResult").innerHTML = `
+      <div class="result">
+        Errore: ${data.error}
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById("assistantResult").innerHTML = `
+    <div class="result">
+      <h3>Oracle Assistant AI</h3>
+      <b>Domanda:</b>
+      <p>${data.question}</p>
+
+      <b>Risposta:</b>
+      <pre style="white-space: pre-wrap; font-family: Arial;">${data.answer}</pre>
+    </div>
+  `;
+}
+
+async function loadOracleMemory() {
+  const id = document.getElementById("memoryCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const res = await fetch(`${API}/api/oracle-memory/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("memoryResult").innerHTML = `
+      <div class="result">Errore: ${data.error}</div>
+    `;
+    return;
+  }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    document.getElementById("memoryResult").innerHTML = `
+      <div class="result">Nessuna memoria AI ancora salvata.</div>
+    `;
+    return;
+  }
+
+  document.getElementById("memoryResult").innerHTML = data.map(m => `
+    <div class="result timeline-item">
+      <span class="badge badge-blue">🧠 Memoria #${m.id}</span>
+      <span class="badge ${m.oracle_score >= 65 ? "badge-green" : m.oracle_score >= 45 ? "badge-blue" : m.oracle_score >= 25 ? "badge-yellow" : "badge-red"}">
+        Score ${m.oracle_score}
+      </span>
+
+      <p class="small-muted">🕒 ${m.created_at}</p>
+
+      <b>Domanda:</b>
+      <p>${m.question}</p>
+
+      <b>Risposta salvata:</b>
+      <pre style="white-space: pre-wrap; font-family: Arial;">${m.answer}</pre>
+    </div>
+  `).join("");
+}
+
+async function loadOracleTimeline() {
+  const id = document.getElementById("timelineCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const res = await fetch(`${API}/api/oracle-timeline/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("timelineResult").innerHTML = `
+      <div class="result">Errore: ${data.error}</div>
+    `;
+    return;
+  }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    document.getElementById("timelineResult").innerHTML = `
+      <div class="result">
+        Nessuno storico disponibile. Calcola Oracle Score più volte per generare la timeline.
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById("timelineResult").innerHTML = `
+    <div class="result">
+      <h3>📈 Oracle Score nel tempo</h3>
+
+      <div class="chart-box">
+        ${data.map((s, index) => `
+          <div class="chart-col">
+            <div class="chart-value">${s.oracle_score}</div>
+            <div class="chart-bar" style="--bar-height:${Math.max(5, s.oracle_score)}%"></div>
+            <div class="chart-label">#${index + 1}</div>
+          </div>
+        `).join("")}
+      </div>
+
+      <h3>Moduli ultimo snapshot</h3>
+
+      ${(() => {
+        const last = data[data.length - 1];
+
+        return `
+          <p>💰 Finance: <b>${last.finance_score}</b></p>
+          ${progressBar(last.finance_score)}
+
+          <p>📈 Business Health: <b>${last.business_health_score}</b></p>
+          ${progressBar(last.business_health_score)}
+
+          <p>👥 Customer: <b>${last.customer_score}</b></p>
+          ${progressBar(last.customer_score)}
+
+          <p>📄 Compliance: <b>${last.compliance_score}</b></p>
+          ${progressBar(last.compliance_score)}
+
+          <p>🛡 Cyber: <b>${last.cyber_score}</b></p>
+          ${progressBar(last.cyber_score)}
+        `;
+      })()}
+    </div>
+  `;
+}
+
+function renderMiniBars(title, data, valueKey, labelKey = "label", suffix = "") {
+  const max = Math.max(...data.map(x => Number(x[valueKey] || 0)), 1);
+
+  return `
+    <div class="chart-card">
+      <div class="chart-title">${title}</div>
+      <div class="mini-bars">
+        ${data.map(x => {
+          const value = Number(x[valueKey] || 0);
+          const height = Math.max(5, (value / max) * 100);
+          return `
+            <div class="mini-bar-col">
+              <div style="font-size:12px;">${value}${suffix}</div>
+              <div class="mini-bar" style="--bar-height:${height}%"></div>
+              <div class="chart-label">${x[labelKey]}</div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderLineChart(title, data, valueKey, labelKey = "label") {
+  if (!data || data.length === 0) {
+    return `<div class="chart-card"><div class="chart-title">${title}</div>Nessun dato.</div>`;
+  }
+
+  const width = 600;
+  const height = 220;
+  const padding = 26;
+
+  const values = data.map(x => Number(x[valueKey] || 0));
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+
+  const points = data.map((x, i) => {
+    const px = padding + (i * (width - padding * 2)) / Math.max(data.length - 1, 1);
+    const py = height - padding - ((Number(x[valueKey] || 0) - min) / Math.max(max - min, 1)) * (height - padding * 2);
+    return `${px},${py}`;
+  }).join(" ");
+
+  return `
+    <div class="chart-card">
+      <div class="chart-title">${title}</div>
+      <svg class="line-chart" viewBox="0 0 ${width} ${height}">
+        <polyline class="line-path" points="${points}" />
+        ${data.map((x, i) => {
+          const px = padding + (i * (width - padding * 2)) / Math.max(data.length - 1, 1);
+          const py = height - padding - ((Number(x[valueKey] || 0) - min) / Math.max(max - min, 1)) * (height - padding * 2);
+          return `<circle cx="${px}" cy="${py}" r="5" fill="#22c55e"></circle>`;
+        }).join("")}
+      </svg>
+    </div>
+  `;
+}
+
+function objectToChartData(obj) {
+  return Object.entries(obj || {}).map(([label, value]) => ({
+    label,
+    value: Math.round(value * 100) / 100
+  }));
+}
+
+async function loadAdvancedCharts() {
+  const id = document.getElementById("advancedChartsCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const timelineRes = await fetch(`${API}/api/oracle-timeline/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const revenueRes = await fetch(`${API}/api/revenue-analytics/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const timeline = await timelineRes.json();
+  const revenue = await revenueRes.json();
+
+  if (timeline.error || revenue.error) {
+    document.getElementById("advancedChartsResult").innerHTML = `
+      <div class="result">
+        Errore: ${timeline.error || revenue.error}
+      </div>
+    `;
+    return;
+  }
+
+  const timelineData = Array.isArray(timeline)
+    ? timeline.map((x, i) => ({
+        label: `#${i + 1}`,
+        oracle_score: x.oracle_score,
+        finance_score: x.finance_score,
+        customer_score: x.customer_score,
+        compliance_score: x.compliance_score,
+        business_health_score: x.business_health_score
+      }))
+    : [];
+
+  const revenueTrend = revenue.trend || [];
+  const paymentMix = objectToChartData(revenue.payment_mix);
+  const categoryMix = objectToChartData(revenue.category_mix);
+
+  document.getElementById("advancedChartsResult").innerHTML = `
+    <div class="result">
+      <h3>📊 Grafici AI avanzati</h3>
+
+      <div class="chart-grid">
+        ${renderLineChart("📈 Oracle Score nel tempo", timelineData, "oracle_score")}
+        ${renderLineChart("💰 Finance Score nel tempo", timelineData, "finance_score")}
+        ${renderLineChart("👥 Customer Score nel tempo", timelineData, "customer_score")}
+        ${renderLineChart("📄 Compliance Score nel tempo", timelineData, "compliance_score")}
+        ${renderMiniBars("💶 Revenue trend progressivo", revenueTrend, "total")}
+        ${renderMiniBars("🏦 Mix pagamenti", paymentMix, "value")}
+        ${renderMiniBars("🏷️ Entrate per categoria", categoryMix, "value")}
+      </div>
+    </div>
+  `;
+}
+
+function cyberBadge(level){
+
+  if(level==="ECCELLENTE"){
+    return "badge-green";
+  }
+
+  if(level==="FORTE"){
+    return "badge-green";
+  }
+
+  if(level==="STABILE"){
+    return "badge-blue";
+  }
+
+  if(level==="FRAGILE"){
+    return "badge-yellow";
+  }
+
+  return "badge-red";
+}
+
+async function runCyberAI(){
+
+  const companyId =
+    document.getElementById("cyberCompanyId").value;
+
+  const token =
+    localStorage.getItem("oracle_token");
+
+  const res = await fetch(
+    `${API}/api/cyber-ai/${companyId}`,
+    {
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  if(data.error){
+
+    document.getElementById("cyberResult").innerHTML=`
+      <div class="result">
+        ${data.error}
+      </div>
+    `;
+
+    return;
+  }
+
+  document.getElementById("cyberResult").innerHTML=`
+
+  <div class="cyber-card">
+
+    <span class="badge ${cyberBadge(data.level)}">
+      🛡 ${data.level}
+    </span>
+
+    <div class="cyber-score">
+      ${data.cyber_score}
+    </div>
+
+    ${progressBar(data.cyber_score)}
+
+    <div class="cyber-grid">
+
+      <div class="cyber-metric">
+        <div class="cyber-title">
+          Exposure Score
+        </div>
+
+        <div class="cyber-value">
+          ${data.exposure_score}
+        </div>
+
+        ${progressBar(data.exposure_score)}
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">
+          Vulnerability Score
+        </div>
+
+        <div class="cyber-value">
+          ${data.vulnerability_score}
+        </div>
+
+        ${progressBar(data.vulnerability_score)}
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">
+          Threat Score
+        </div>
+
+        <div class="cyber-value">
+          ${data.threat_score}
+        </div>
+
+        ${progressBar(data.threat_score)}
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">
+          Prediction Score
+        </div>
+
+        <div class="cyber-value">
+          ${data.prediction_score}
+        </div>
+
+        ${progressBar(data.prediction_score)}
+      </div>
+
+    </div>
+
+    <hr>
+
+    <h3>
+      🎯 Probabilità Attacco
+    </h3>
+
+    <span class="badge badge-yellow">
+      30 giorni:
+      ${data.attack_probability_30d}%
+    </span>
+
+    <span class="badge badge-red">
+      90 giorni:
+      ${data.attack_probability_90d}%
+    </span>
+
+    <hr>
+
+    <h3>
+      ⚠️ Rischio Principale
+    </h3>
+
+    <p>
+      ${data.main_risk}
+    </p>
+
+    <hr>
+
+    <h3>
+      ✅ Punti Forti
+    </h3>
+
+    <ul>
+      ${
+        data.strengths.map(
+          x => `<li>${x}</li>`
+        ).join("")
+      }
+    </ul>
+
+    <h3>
+      🚨 Rischi
+    </h3>
+
+    <ul>
+      ${
+        data.risks.map(
+          x => `<li>${x}</li>`
+        ).join("")
+      }
+    </ul>
+
+    <h3>
+      🤖 Raccomandazione AI
+    </h3>
+
+    <p>
+      ${data.recommendation}
+    </p>
+
+  </div>
+  `;
+}
+
+async function loadCyberTimeline() {
+  const companyId = document.getElementById("cyberTimelineCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const res = await fetch(`${API}/api/cyber-timeline/${companyId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("cyberTimelineResult").innerHTML = `
+      <div class="result">
+        ${data.error}
+      </div>
+    `;
+    return;
+  }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    document.getElementById("cyberTimelineResult").innerHTML = `
+      <div class="result">
+        Nessuno storico Cyber disponibile. Esegui Cyber Oracle AI più volte.
+      </div>
+    `;
+    return;
+  }
+
+  const timelineData = data.map((x, i) => ({
+    label: `#${i + 1}`,
+    cyber_score: x.cyber_score,
+    exposure_score: x.exposure_score,
+    vulnerability_score: x.vulnerability_score,
+    threat_score: x.threat_score,
+    prediction_score: x.prediction_score
+  }));
+
+  document.getElementById("cyberTimelineResult").innerHTML = `
+    <div class="result">
+      <h3>📈 Cyber Score Timeline</h3>
+
+      <div class="chart-grid">
+        ${renderLineChart("🛡 Cyber Score nel tempo", timelineData, "cyber_score")}
+        ${renderLineChart("🌐 Exposure Score nel tempo", timelineData, "exposure_score")}
+        ${renderLineChart("⚠️ Vulnerability Score nel tempo", timelineData, "vulnerability_score")}
+        ${renderLineChart("🚨 Threat Score nel tempo", timelineData, "threat_score")}
+        ${renderLineChart("🎯 Prediction Score nel tempo", timelineData, "prediction_score")}
+      </div>
+
+      <hr>
+
+      <h3>Ultimo snapshot Cyber</h3>
+
+      ${(() => {
+        const last = timelineData[timelineData.length - 1];
+
+        return `
+          <p>🛡 Cyber Score: <b>${last.cyber_score}</b></p>
+          ${progressBar(last.cyber_score)}
+
+          <p>🌐 Exposure: <b>${last.exposure_score}</b></p>
+          ${progressBar(last.exposure_score)}
+
+          <p>⚠️ Vulnerability: <b>${last.vulnerability_score}</b></p>
+          ${progressBar(last.vulnerability_score)}
+
+          <p>🚨 Threat: <b>${last.threat_score}</b></p>
+          ${progressBar(last.threat_score)}
+
+          <p>🎯 Prediction: <b>${last.prediction_score}</b></p>
+          ${progressBar(last.prediction_score)}
+        `;
+      })()}
+    </div>
+  `;
+}
+
+async function createCyberAsset() {
+  const token = localStorage.getItem("oracle_token");
+
+  const params = new URLSearchParams({
+    company_id: document.getElementById("assetCompanyId").value,
+    asset_type: document.getElementById("assetType").value,
+    value: document.getElementById("assetValue").value,
+    provider: document.getElementById("assetProvider").value,
+    technology_stack: document.getElementById("assetTech").value,
+    notes: document.getElementById("assetNotes").value
+  });
+
+  const res = await fetch(`${API}/api/cyber-assets?${params}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  document.getElementById("cyberDataResult").innerHTML = `
+    <div class="result">
+      Asset creato.<br>
+      ID: <b>${data.id}</b><br>
+      Tipo: ${data.asset_type}<br>
+      Valore: ${data.value}<br>
+      Provider: ${data.provider}
+    </div>
+  `;
+}
+
+async function createCyberFinding() {
+  const token = localStorage.getItem("oracle_token");
+
+  const params = new URLSearchParams({
+    company_id: document.getElementById("findingCompanyId").value,
+    asset_id: document.getElementById("findingAssetId").value,
+    title: document.getElementById("findingTitle").value,
+    category: document.getElementById("findingCategory").value,
+    severity: document.getElementById("findingSeverity").value,
+    description: document.getElementById("findingDescription").value,
+    recommendation: document.getElementById("findingRecommendation").value,
+    scan_id: 0
+  });
+
+  const res = await fetch(`${API}/api/cyber-findings?${params}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  document.getElementById("cyberDataResult").innerHTML = `
+    <div class="result">
+      Finding creato.<br>
+      ID: <b>${data.id}</b><br>
+      Titolo: ${data.title}<br>
+      Severità: <span class="badge ${cyberBadge(data.severity.toUpperCase())}">${data.severity}</span>
+    </div>
+  `;
+}
+
+async function createCyberThreat() {
+  const token = localStorage.getItem("oracle_token");
+
+  const params = new URLSearchParams({
+    company_id: document.getElementById("threatCompanyId").value,
+    source: document.getElementById("threatSource").value,
+    threat_type: document.getElementById("threatType").value,
+    title: document.getElementById("threatTitle").value,
+    description: document.getElementById("threatDescription").value,
+    severity: document.getElementById("threatSeverity").value,
+    score: document.getElementById("threatScore").value,
+    cve_id: document.getElementById("threatCve").value
+  });
+
+  const res = await fetch(`${API}/api/cyber-threats?${params}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  document.getElementById("cyberDataResult").innerHTML = `
+    <div class="result">
+      Threat creato.<br>
+      ID: <b>${data.id}</b><br>
+      Titolo: ${data.title}<br>
+      Fonte: ${data.source}<br>
+      Severità: <span class="badge ${cyberBadge(data.severity.toUpperCase())}">${data.severity}</span>
+    </div>
+  `;
+}
+
+async function loadCyberData() {
+  const companyId = document.getElementById("cyberDataCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const assetsRes = await fetch(`${API}/api/cyber-assets/${companyId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const findingsRes = await fetch(`${API}/api/cyber-findings/${companyId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const threatsRes = await fetch(`${API}/api/cyber-threats/${companyId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const assets = await assetsRes.json();
+  const findings = await findingsRes.json();
+  const threats = await threatsRes.json();
+
+  document.getElementById("cyberDataResult").innerHTML = `
+    <div class="result">
+      <h3>🌐 Assets</h3>
+      ${
+        Array.isArray(assets) && assets.length > 0
+          ? assets.map(a => `
+            <div class="cyber-card">
+              <span class="badge badge-blue">ID ${a.id}</span>
+              <b>${a.value}</b><br>
+              Tipo: ${a.asset_type}<br>
+              Provider: ${a.provider}<br>
+              Stack: ${safe(a.technology_stack)}<br>
+              Note: ${safe(a.notes)}
+            </div>
+          `).join("")
+          : "Nessun asset cyber."
+      }
+
+      <h3>⚠️ Findings</h3>
+      ${
+        Array.isArray(findings) && findings.length > 0
+          ? findings.map(f => `
+            <div class="cyber-card">
+              <span class="badge ${cyberBadge((f.severity || "").toUpperCase())}">
+                ${f.severity}
+              </span>
+              <b>${f.title}</b><br>
+              Categoria: ${f.category}<br>
+              Descrizione: ${f.description}<br>
+              Raccomandazione: ${f.recommendation}
+            </div>
+          `).join("")
+          : "Nessun finding cyber."
+      }
+
+      <h3>🚨 Threats</h3>
+      ${
+        Array.isArray(threats) && threats.length > 0
+          ? threats.map(t => `
+            <div class="cyber-card">
+              <span class="badge ${cyberBadge((t.severity || "").toUpperCase())}">
+                ${t.severity}
+              </span>
+              <b>${t.title}</b><br>
+              Fonte: ${t.source}<br>
+              Tipo: ${t.threat_type}<br>
+              CVE: ${safe(t.cve_id)}<br>
+              Score: ${t.score}<br>
+              Descrizione: ${t.description}
+            </div>
+          `).join("")
+          : "Nessuna threat cyber."
+      }
+    </div>
+  `;
+}
+
+async function uploadRevenueFile() {
+  const companyId = document.getElementById("importCompanyId").value;
+  const fileInput = document.getElementById("importFile");
+  const token = localStorage.getItem("oracle_token");
+
+  if (!companyId) {
+    document.getElementById("importResult").innerHTML = `
+      <div class="result">Inserisci ID azienda.</div>
+    `;
+    return;
+  }
+
+  if (!fileInput.files || fileInput.files.length === 0) {
+    document.getElementById("importResult").innerHTML = `
+      <div class="result">Seleziona un file CSV o Excel.</div>
+    `;
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  const res = await fetch(`${API}/api/import/revenues/${companyId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("importResult").innerHTML = `
+      <div class="result">Errore: ${data.error}</div>
+    `;
+    return;
+  }
+
+  document.getElementById("importResult").innerHTML = `
+    <div class="result">
+      <h3>Import completato</h3>
+      Righe processate: <b>${data.rows_processed}</b><br>
+      Righe create: <b>${data.rows_created}</b><br>
+      Errori: ${data.errors && data.errors.length > 0 ? data.errors.join("<br>") : "Nessuno"}
+    </div>
+  `;
+}
+
+async function loadImportHistory() {
+  const companyId = document.getElementById("importCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const res = await fetch(`${API}/api/import/history/${companyId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("importResult").innerHTML = `
+      <div class="result">Errore: ${data.error}</div>
+    `;
+    return;
+  }
+
+  document.getElementById("importResult").innerHTML = `
+    <div class="result">
+      <h3>Storico import</h3>
+      ${
+        Array.isArray(data) && data.length > 0
+          ? data.map(job => `
+            <div class="cyber-card">
+              <span class="badge badge-blue">Import #${job.id}</span>
+              <b>${job.file_name}</b><br>
+              Tipo: ${job.import_type}<br>
+              Stato: ${job.status}<br>
+              Righe processate: ${job.rows_processed}<br>
+              Righe create: ${job.rows_created}<br>
+              Data: ${job.created_at}<br>
+              Errori: ${safe(job.errors)}
+            </div>
+          `).join("")
+          : "Nessun import ancora presente."
+      }
+    </div>
+  `;
+}
+
+async function registerUser() {
+  const params = new URLSearchParams({
+    name: document.getElementById("registerName").value,
+    email: document.getElementById("registerEmail").value,
+    password: document.getElementById("registerPassword").value
+  });
+
+  const res = await fetch(`${API}/api/auth/register?${params}`, {
+    method: "POST"
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("authResult").innerHTML = `
+      <div class="result">Errore: ${data.error}</div>
+    `;
+    return;
+  }
+
+  localStorage.setItem("oracle_token", data.token);
+  localStorage.setItem("oracle_user", JSON.stringify(data.user));
+  refreshAuthUi();
+
+  document.getElementById("authResult").innerHTML = `
+    <div class="result">
+      Registrazione completata.<br>
+      Utente: <b>${data.user.name}</b><br>
+      Email: ${data.user.email}
+    </div>
+  `;
+}
+
+async function loginUser() {
+  const params = new URLSearchParams({
+    email: document.getElementById("loginEmail").value,
+    password: document.getElementById("loginPassword").value
+  });
+
+  const res = await fetch(`${API}/api/auth/login?${params}`, {
+    method: "POST"
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("authResult").innerHTML = `
+      <div class="result">Errore: ${data.error}</div>
+    `;
+    return;
+  }
+
+  localStorage.setItem("oracle_token", data.token);
+  localStorage.setItem("oracle_user", JSON.stringify(data.user));
+  refreshAuthUi();
+
+  document.getElementById("authResult").innerHTML = `
+    <div class="result">
+      Login completato.<br>
+      Utente: <b>${data.user.name}</b><br>
+      Email: ${data.user.email}
+    </div>
+  `;
+}
+
+function logoutUser() {
+  localStorage.removeItem("oracle_token");
+  localStorage.removeItem("oracle_user");
+  refreshAuthUi();
+
+  document.getElementById("authResult").innerHTML = `
+    <div class="result">Logout completato.</div>
+  `;
+}
+
+function refreshAuthUi() {
+  const token = localStorage.getItem("oracle_token");
+  const userRaw = localStorage.getItem("oracle_user");
+
+  const appMain = document.getElementById("appMain");
+  const currentUserBox = document.getElementById("currentUserBox");
+
+  if (token && userRaw) {
+    const user = JSON.parse(userRaw);
+
+    appMain.classList.remove("hidden");
+
+    currentUserBox.innerHTML = `
+      <div class="user-badge">
+        ✅ Connesso come ${user.name} — ${user.email}
+      </div>
+    `;
+  } else {
+    appMain.classList.add("hidden");
+
+    currentUserBox.innerHTML = `
+      <div class="result">
+        Effettua il login per usare Oracle Business AI.
+      </div>
+    `;
+  }
+}
+
+refreshAuthUi();
+
+async function loadExecutiveDashboard() {
+
+  const companyId =
+    document.getElementById("executiveCompanyId").value;
+
+  const token =
+    localStorage.getItem("oracle_token");
+
+  const res = await fetch(
+    `${API}/api/executive-dashboard/${companyId}`,
+    {
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  if(data.error){
+    document.getElementById("executiveResult").innerHTML=`
+      <div class="result">
+        ${data.error}
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById("executiveResult").innerHTML=`
+
+  <div class="cyber-card">
+
+    <h2>🏢 ${data.company_name}</h2>
+
+    <span class="badge ${badgeClass(data.oracle_level)}">
+      ${data.oracle_level}
+    </span>
+
+    <h1 style="color:#38bdf8;">
+      Oracle Score ${data.oracle_score}
+    </h1>
+
+    ${progressBar(data.oracle_score)}
+
+    <div class="cyber-grid">
+
+      <div class="cyber-metric">
+        <div class="cyber-title">💰 Entrate Totali</div>
+        <div class="cyber-value">€${data.total_revenue}</div>
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">📊 Operazioni</div>
+        <div class="cyber-value">${data.operations}</div>
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">👥 Clienti</div>
+        <div class="cyber-value">${data.customers}</div>
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">⭐ Top Cliente</div>
+        <div class="cyber-value">${data.top_customer}</div>
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">📄 Compliance</div>
+        <div class="cyber-value">${data.compliance_items}</div>
+      </div>
+
+      <div class="cyber-metric">
+        <div class="cyber-title">🛡 Cyber Score</div>
+        <div class="cyber-value">${data.cyber_score}</div>
+      </div>
+
+    </div>
+
+    <hr>
+
+    <h3>🎯 Probabilità Attacco</h3>
+
+    <span class="badge badge-yellow">
+      30 giorni: ${data.attack_probability_30d}%
+    </span>
+
+    <span class="badge badge-red">
+      90 giorni: ${data.attack_probability_90d}%
+    </span>
+
+    <hr>
+
+    <h3>⚠️ Rischi principali</h3>
+
+    <ul>
+      ${(data.risks || []).map(x => `<li>${x}</li>`).join("")}
+    </ul>
+
+    <h3>🤖 Azioni consigliate</h3>
+
+    <ul>
+      ${(data.suggestions || []).map(x => `<li>${x}</li>`).join("")}
+    </ul>
+
+  </div>
+  `;
+}
+
+async function loadDailyBrief() {
+  const companyId = document.getElementById("dailyBriefCompanyId").value;
+  const token = localStorage.getItem("oracle_token");
+
+  const res = await fetch(`${API}/api/daily-brief/${companyId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("dailyBriefResult").innerHTML = `
+      <div class="result">${data.error}</div>
+    `;
+    return;
+  }
+
+  document.getElementById("dailyBriefResult").innerHTML = `
+    <div class="cyber-card">
+      <span class="badge ${badgeClass(data.level)}">
+        🧠 ${data.level}
+      </span>
+
+      <h2>Oracle Daily Brief — ${data.company_name}</h2>
+
+      <h1 style="color:#38bdf8;">
+        Oracle Score ${data.oracle_score}/100
+      </h1>
+
+      ${progressBar(data.oracle_score)}
+
+      <h3>📌 Sintesi</h3>
+      <ul>
+        ${data.brief.map(x => `<li>${x}</li>`).join("")}
+      </ul>
+
+      <h3>🎯 Priorità di oggi</h3>
+      <ul>
+        ${data.priorities.map(x => `<li>${x}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function showTab(tabId){
+
+  document
+    .querySelectorAll(".tab-pane")
+    .forEach(x => x.classList.remove("active"));
+
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach(x => x.classList.remove("active"));
+
+  const tab =
+    document.getElementById(tabId);
+
+  if(tab){
+    tab.classList.add("active");
+  }
+
+  const btn =
+    document.querySelector(
+      `[data-tab="${tabId}"]`
+    );
+
+  if(btn){
+    btn.classList.add("active");
+  }
+}
+
+</script>
+
+</body>
+</html>
