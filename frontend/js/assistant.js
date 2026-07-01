@@ -4,12 +4,12 @@ function renderAssistant() {
     setContent(`
         <div class="card">
             <h2>🤖 Oracle Assistant AI</h2>
-            <p>Fai domande all'assistente AI usando i dati reali dell'azienda.</p>
+            <p>Assistente AI basato sui dati reali dell’azienda.</p>
 
-            <textarea id="assistantQuestion" placeholder="Esempio: Come sta andando la mia azienda? Qual è il rischio principale? Quanto ho incassato? Qual è il mio rischio cyber?"></textarea>
+            <textarea id="assistantQuestion" placeholder="Esempio: Come sta andando la mia azienda? Qual è il mio rischio cyber? Cosa devo migliorare?"></textarea>
 
-            <button onclick="askAssistant()">Chiedi a Oracle Assistant</button>
-            <button onclick="loadAssistantMemory()">Carica memoria AI</button>
+            <button onclick="askAssistant()">Chiedi</button>
+            <button onclick="loadAssistantMemory()">Memoria AI</button>
 
             <div id="assistantResult"></div>
         </div>
@@ -18,17 +18,14 @@ function renderAssistant() {
 
 async function askAssistant() {
     const companyId = getCompanyId();
-    const question = document.getElementById("assistantQuestion").value;
+    const question = document.getElementById("assistantQuestion").value || "";
 
-    if (!question) {
-        document.getElementById("assistantResult").innerHTML =
-            `<div class="result">Scrivi una domanda.</div>`;
+    if (!question.trim()) {
+        showError("assistantResult", "Scrivi una domanda.");
         return;
     }
 
-    const params = new URLSearchParams({
-        question: question
-    });
+    const params = new URLSearchParams({ question });
 
     const res = await fetch(`${API}/api/oracle-assistant/${companyId}?${params}`, {
         method: "POST",
@@ -38,10 +35,13 @@ async function askAssistant() {
     const data = await res.json();
 
     if (data.error) {
-        document.getElementById("assistantResult").innerHTML =
-            `<div class="result">${data.error}</div>`;
+        showError("assistantResult", data.error);
         return;
     }
+
+    const oracle = data.oracle_score || {};
+    const score = safeNumber(oracle.oracle_score);
+    const level = safeValue(oracle.level, "STABILE");
 
     document.getElementById("assistantResult").innerHTML = `
         <div class="card">
@@ -49,19 +49,19 @@ async function askAssistant() {
 
             <div class="result">
                 <b>Domanda:</b>
-                <p>${data.question}</p>
+                <p>${safeValue(data.question)}</p>
             </div>
 
             <div class="result">
                 <b>Risposta:</b>
-                <pre style="white-space:pre-wrap;font-family:inherit;">${data.answer}</pre>
+                <pre style="white-space:pre-wrap;font-family:inherit;">${safeValue(data.answer)}</pre>
             </div>
 
             <div class="result">
                 <h3>Oracle Score collegato</h3>
-                <span class="badge ${badgeClass(data.oracle_score.level)}">${data.oracle_score.level}</span>
-                <div class="kpi-value">${data.oracle_score.oracle_score}/100</div>
-                ${progressBar(data.oracle_score.oracle_score)}
+                <span class="badge ${badgeClass(level)}">${level}</span>
+                <div class="kpi-value">${score}/100</div>
+                ${progressBar(score)}
             </div>
         </div>
     `;
@@ -69,34 +69,37 @@ async function askAssistant() {
 
 async function loadAssistantMemory() {
     const companyId = getCompanyId();
-
     const data = await apiGet(`/api/oracle-memory/${companyId}`);
 
-    if (!Array.isArray(data)) {
-        document.getElementById("assistantResult").innerHTML =
-            `<div class="result">${data.error || "Errore caricamento memoria AI"}</div>`;
+    if (data.error) {
+        showError("assistantResult", data.error);
         return;
     }
+
+    const memories = safeArray(data);
 
     document.getElementById("assistantResult").innerHTML = `
         <div class="card">
             <h3>🧠 Oracle Memory AI</h3>
             ${
-                data.length > 0
-                    ? data.map(m => `
-                        <div class="result">
-                            <span class="badge badge-blue">Memoria #${m.id}</span>
-                            <span class="badge ${m.oracle_score >= 65 ? "badge-green" : m.oracle_score >= 45 ? "badge-blue" : m.oracle_score >= 25 ? "badge-yellow" : "badge-red"}">
-                                Score ${m.oracle_score}
-                            </span>
-                            <br><br>
-                            <b>Domanda:</b>
-                            <p>${m.question}</p>
-                            <b>Risposta:</b>
-                            <pre style="white-space:pre-wrap;font-family:inherit;">${m.answer}</pre>
-                            <small>${m.created_at}</small>
-                        </div>
-                    `).join("")
+                memories.length > 0
+                    ? memories.map(m => {
+                        const score = safeNumber(m.oracle_score);
+                        return `
+                            <div class="result">
+                                <span class="badge badge-blue">Memoria #${safeValue(m.id)}</span>
+                                <span class="badge ${score >= 65 ? "badge-green" : score >= 45 ? "badge-blue" : score >= 25 ? "badge-yellow" : "badge-red"}">
+                                    Score ${score}
+                                </span>
+                                <br><br>
+                                <b>Domanda:</b>
+                                <p>${safeValue(m.question)}</p>
+                                <b>Risposta:</b>
+                                <pre style="white-space:pre-wrap;font-family:inherit;">${safeValue(m.answer)}</pre>
+                                <small>${safeValue(m.created_at)}</small>
+                            </div>
+                        `;
+                    }).join("")
                     : "<p>Nessuna memoria AI salvata.</p>"
             }
         </div>

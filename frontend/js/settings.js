@@ -7,15 +7,15 @@ function renderSettings() {
     setContent(`
         <div class="card">
             <h2>⚙️ Settings</h2>
-            <p>Gestione account, azienda e configurazioni base.</p>
+            <p>Gestione account, aziende e configurazioni base.</p>
 
             <div class="grid-2">
                 <div>
                     <h3>👤 Utente</h3>
                     <div class="result">
-                        Nome: <b>${user ? user.name : "-"}</b><br>
-                        Email: ${user ? user.email : "-"}<br>
-                        Ruolo: ${user ? user.role : "-"}
+                        Nome: <b>${safeValue(user?.name)}</b><br>
+                        Email: ${safeValue(user?.email)}<br>
+                        Ruolo: ${safeValue(user?.role)}
                     </div>
                 </div>
 
@@ -40,10 +40,10 @@ function renderSettings() {
 
 async function createCompanyFromSettings() {
     const params = new URLSearchParams({
-        name: document.getElementById("settingsCompanyName").value,
-        sector: document.getElementById("settingsSector").value,
-        country: document.getElementById("settingsCountry").value,
-        domain: document.getElementById("settingsDomain").value
+        name: document.getElementById("settingsCompanyName").value || "Nuova azienda",
+        sector: document.getElementById("settingsSector").value || "generale",
+        country: document.getElementById("settingsCountry").value || "Italia",
+        domain: document.getElementById("settingsDomain").value || ""
     });
 
     const res = await fetch(`${API}/api/companies?${params}`, {
@@ -54,8 +54,7 @@ async function createCompanyFromSettings() {
     const data = await res.json();
 
     if (data.error) {
-        document.getElementById("settingsResult").innerHTML =
-            `<div class="result">${data.error}</div>`;
+        showError("settingsResult", data.error);
         return;
     }
 
@@ -64,9 +63,9 @@ async function createCompanyFromSettings() {
     document.getElementById("settingsResult").innerHTML = `
         <div class="result">
             Azienda creata.<br>
-            ID: <b>${data.id}</b><br>
-            Nome: ${data.name}<br>
-            Dominio: ${data.domain || "-"}
+            ID: <b>${safeValue(data.id)}</b><br>
+            Nome: ${safeValue(data.name)}<br>
+            Dominio: ${safeValue(data.domain)}
         </div>
     `;
 }
@@ -74,24 +73,25 @@ async function createCompanyFromSettings() {
 async function loadCompaniesSettings() {
     const data = await apiGet("/api/companies");
 
-    if (!Array.isArray(data)) {
-        document.getElementById("settingsResult").innerHTML =
-            `<div class="result">${data.error || "Errore caricamento aziende"}</div>`;
+    if (data.error) {
+        showError("settingsResult", data.error);
         return;
     }
+
+    const companies = safeArray(data);
 
     document.getElementById("settingsResult").innerHTML = `
         <div class="card">
             <h3>Aziende disponibili</h3>
             ${
-                data.length > 0
-                    ? data.map(c => `
+                companies.length > 0
+                    ? companies.map(c => `
                         <div class="result">
-                            <span class="badge badge-blue">ID ${c.id}</span>
-                            <b>${c.name}</b><br>
-                            Settore: ${c.sector || "-"}<br>
-                            Paese: ${c.country || "-"}<br>
-                            Dominio: ${c.domain || "-"}<br><br>
+                            <span class="badge badge-blue">ID ${safeValue(c.id)}</span>
+                            <b>${safeValue(c.name)}</b><br>
+                            Settore: ${safeValue(c.sector)}<br>
+                            Paese: ${safeValue(c.country)}<br>
+                            Dominio: ${safeValue(c.domain)}<br><br>
                             <button onclick="selectCompany(${c.id})">
                                 Usa questa azienda
                             </button>

@@ -4,13 +4,13 @@ function renderCyber() {
     setContent(`
         <div class="card">
             <h2>🛡 Cyber Oracle AI</h2>
-            <p>Gestione asset cyber, finding, minacce, score e predizione rischio.</p>
+            <p>Gestione asset, finding, minacce, prediction e rischio cyber aziendale.</p>
 
             <div class="grid-2">
                 <div>
-                    <h3>🌐 Aggiungi Asset Cyber</h3>
+                    <h3>🌐 Asset Cyber</h3>
                     <input id="assetType" placeholder="Tipo: domain, subdomain, ip, cloud">
-                    <input id="assetValue" placeholder="Valore: azienda.it, api.azienda.it">
+                    <input id="assetValue" placeholder="Valore: azienda.it">
                     <input id="assetProvider" placeholder="Provider: Cloudflare, AWS, Azure, unknown">
                     <textarea id="assetTech" placeholder="Technology stack"></textarea>
                     <textarea id="assetNotes" placeholder="Note"></textarea>
@@ -19,7 +19,7 @@ function renderCyber() {
 
                 <div>
                     <h3>🛡 Analisi Cyber</h3>
-                    <button onclick="loadCyberAssets()">Carica Assets</button>
+                    <button onclick="loadCyberData()">Carica dati Cyber</button>
                     <button onclick="runCyberAI()">Esegui Cyber Oracle AI</button>
                     <button onclick="loadCyberPredictions()">Carica Predictions</button>
                     <button onclick="loadCyberTimeline()">Cyber Timeline</button>
@@ -30,7 +30,7 @@ function renderCyber() {
 
             <div class="grid-2">
                 <div>
-                    <h3>⚠️ Aggiungi Finding</h3>
+                    <h3>⚠️ Finding</h3>
                     <input id="findingAssetId" placeholder="ID asset">
                     <input id="findingTitle" placeholder="Titolo finding">
                     <input id="findingCategory" placeholder="Categoria: ssl, dns, headers, cve">
@@ -46,7 +46,7 @@ function renderCyber() {
                 </div>
 
                 <div>
-                    <h3>🚨 Aggiungi Threat</h3>
+                    <h3>🚨 Threat</h3>
                     <input id="threatSource" placeholder="Fonte: NVD, CISA KEV, OSINT">
                     <input id="threatType" placeholder="Tipo: cve, ransomware, phishing">
                     <input id="threatTitle" placeholder="Titolo threat">
@@ -68,17 +68,6 @@ function renderCyber() {
     `);
 }
 
-function severityBadge(severity) {
-    const s = (severity || "").toLowerCase();
-
-    if (s === "critical") return "badge-red";
-    if (s === "high") return "badge-red";
-    if (s === "medium") return "badge-yellow";
-    if (s === "low") return "badge-blue";
-
-    return "badge-blue";
-}
-
 async function createCyberAsset() {
     const companyId = getCompanyId();
 
@@ -98,72 +87,86 @@ async function createCyberAsset() {
 
     const data = await res.json();
 
+    if (data.error) {
+        showError("cyberResult", data.error);
+        return;
+    }
+
     document.getElementById("cyberResult").innerHTML = `
         <div class="result">
             Asset creato.<br>
-            ID: <b>${data.id}</b><br>
-            Tipo: ${data.asset_type}<br>
-            Valore: ${data.value}<br>
-            Provider: ${data.provider}
+            ID: <b>${safeValue(data.id)}</b><br>
+            Tipo: ${safeValue(data.asset_type)}<br>
+            Valore: ${safeValue(data.value)}<br>
+            Provider: ${safeValue(data.provider)}
         </div>
     `;
 }
 
-async function loadCyberAssets() {
+async function loadCyberData() {
     const companyId = getCompanyId();
 
     const assets = await apiGet(`/api/cyber-assets/${companyId}`);
     const findings = await apiGet(`/api/cyber-findings/${companyId}`);
     const threats = await apiGet(`/api/cyber-threats/${companyId}`);
 
+    if (assets.error || findings.error || threats.error) {
+        showError("cyberResult", assets.error || findings.error || threats.error);
+        return;
+    }
+
+    const assetList = safeArray(assets);
+    const findingList = safeArray(findings);
+    const threatList = safeArray(threats);
+
     document.getElementById("cyberResult").innerHTML = `
         <div class="card">
-            <h3>🌐 Cyber Assets</h3>
+            <h3>🌐 Assets</h3>
             ${
-                Array.isArray(assets) && assets.length > 0
-                    ? assets.map(a => `
+                assetList.length > 0
+                    ? assetList.map(a => `
                         <div class="result">
-                            <span class="badge badge-blue">ID ${a.id}</span>
-                            <b>${a.value}</b><br>
-                            Tipo: ${a.asset_type}<br>
-                            Provider: ${a.provider}<br>
-                            Stack: ${a.technology_stack || "-"}<br>
-                            Note: ${a.notes || "-"}
+                            <span class="badge badge-blue">ID ${safeValue(a.id)}</span>
+                            <b>${safeValue(a.value)}</b><br>
+                            Tipo: ${safeValue(a.asset_type)}<br>
+                            Provider: ${safeValue(a.provider)}<br>
+                            Stack: ${safeValue(a.technology_stack)}<br>
+                            Note: ${safeValue(a.notes)}
                         </div>
                     `).join("")
-                    : "<p>Nessun asset cyber.</p>"
+                    : "<p>Nessun asset cyber presente.</p>"
             }
 
             <h3>⚠️ Findings</h3>
             ${
-                Array.isArray(findings) && findings.length > 0
-                    ? findings.map(f => `
+                findingList.length > 0
+                    ? findingList.map(f => `
                         <div class="result">
-                            <span class="badge ${severityBadge(f.severity)}">${f.severity}</span>
-                            <b>${f.title}</b><br>
-                            Categoria: ${f.category}<br>
-                            Descrizione: ${f.description}<br>
-                            Raccomandazione: ${f.recommendation}
+                            <span class="badge ${severityBadge(f.severity)}">${safeValue(f.severity)}</span>
+                            <b>${safeValue(f.title)}</b><br>
+                            Categoria: ${safeValue(f.category)}<br>
+                            Descrizione: ${safeValue(f.description)}<br>
+                            Raccomandazione: ${safeValue(f.recommendation)}
                         </div>
                     `).join("")
-                    : "<p>Nessun finding cyber.</p>"
+                    : "<p>Nessun finding cyber presente.</p>"
             }
 
             <h3>🚨 Threats</h3>
             ${
-                Array.isArray(threats) && threats.length > 0
-                    ? threats.map(t => `
+                threatList.length > 0
+                    ? threatList.map(t => `
                         <div class="result">
-                            <span class="badge ${severityBadge(t.severity)}">${t.severity}</span>
-                            <b>${t.title}</b><br>
-                            Fonte: ${t.source}<br>
-                            Tipo: ${t.threat_type}<br>
-                            CVE: ${t.cve_id || "-"}<br>
-                            Score: ${t.score}<br>
-                            Descrizione: ${t.description}
+                            <span class="badge ${severityBadge(t.severity)}">${safeValue(t.severity)}</span>
+                            <b>${safeValue(t.title)}</b><br>
+                            Fonte: ${safeValue(t.source)}<br>
+                            Tipo: ${safeValue(t.threat_type)}<br>
+                            CVE: ${safeValue(t.cve_id)}<br>
+                            Score: ${safeNumber(t.score)}<br>
+                            Descrizione: ${safeValue(t.description)}
                         </div>
                     `).join("")
-                    : "<p>Nessuna threat cyber.</p>"
+                    : "<p>Nessuna threat cyber presente.</p>"
             }
         </div>
     `;
@@ -190,12 +193,17 @@ async function createCyberFinding() {
 
     const data = await res.json();
 
+    if (data.error) {
+        showError("cyberResult", data.error);
+        return;
+    }
+
     document.getElementById("cyberResult").innerHTML = `
         <div class="result">
             Finding creato.<br>
-            ID: <b>${data.id}</b><br>
-            Titolo: ${data.title}<br>
-            Severità: <span class="badge ${severityBadge(data.severity)}">${data.severity}</span>
+            ID: <b>${safeValue(data.id)}</b><br>
+            Titolo: ${safeValue(data.title)}<br>
+            Severità: <span class="badge ${severityBadge(data.severity)}">${safeValue(data.severity)}</span>
         </div>
     `;
 }
@@ -221,72 +229,69 @@ async function createCyberThreat() {
 
     const data = await res.json();
 
+    if (data.error) {
+        showError("cyberResult", data.error);
+        return;
+    }
+
     document.getElementById("cyberResult").innerHTML = `
         <div class="result">
             Threat creata.<br>
-            ID: <b>${data.id}</b><br>
-            Titolo: ${data.title}<br>
-            Severità: <span class="badge ${severityBadge(data.severity)}">${data.severity}</span>
+            ID: <b>${safeValue(data.id)}</b><br>
+            Titolo: ${safeValue(data.title)}<br>
+            Severità: <span class="badge ${severityBadge(data.severity)}">${safeValue(data.severity)}</span>
         </div>
     `;
 }
 
 async function runCyberAI() {
     const companyId = getCompanyId();
-
     const data = await apiPost(`/api/cyber-ai/${companyId}`);
 
     if (data.error) {
-        document.getElementById("cyberResult").innerHTML =
-            `<div class="result">${data.error}</div>`;
+        showError("cyberResult", data.error);
         return;
     }
+
+    const cyberScore = safeNumber(data.cyber_score);
+    const exposureScore = safeNumber(data.exposure_score);
+    const vulnerabilityScore = safeNumber(data.vulnerability_score);
+    const threatScore = safeNumber(data.threat_score);
+    const predictionScore = safeNumber(data.prediction_score);
+    const level = safeValue(data.level, "STABILE");
+    const attack30 = safeNumber(data.attack_probability_30d);
+    const attack90 = safeNumber(data.attack_probability_90d);
 
     document.getElementById("cyberResult").innerHTML = `
         <div class="card">
             <h3>🛡 Cyber Oracle AI</h3>
 
-            <span class="badge ${badgeClass(data.level)}">${data.level}</span>
+            <span class="badge ${badgeClass(level)}">${level}</span>
 
-            <div class="kpi-value">${data.cyber_score}/100</div>
-            ${progressBar(data.cyber_score)}
+            <div class="kpi-value">${cyberScore}/100</div>
+            ${progressBar(cyberScore)}
 
             <div class="kpi-grid">
-                <div class="kpi">
-                    <div class="kpi-title">Exposure</div>
-                    <div class="kpi-value">${data.exposure_score}</div>
-                </div>
-
-                <div class="kpi">
-                    <div class="kpi-title">Vulnerability</div>
-                    <div class="kpi-value">${data.vulnerability_score}</div>
-                </div>
-
-                <div class="kpi">
-                    <div class="kpi-title">Threat</div>
-                    <div class="kpi-value">${data.threat_score}</div>
-                </div>
-
-                <div class="kpi">
-                    <div class="kpi-title">Prediction</div>
-                    <div class="kpi-value">${data.prediction_score}</div>
-                </div>
+                <div class="kpi"><div class="kpi-title">Exposure</div><div class="kpi-value">${exposureScore}</div></div>
+                <div class="kpi"><div class="kpi-title">Vulnerability</div><div class="kpi-value">${vulnerabilityScore}</div></div>
+                <div class="kpi"><div class="kpi-title">Threat</div><div class="kpi-value">${threatScore}</div></div>
+                <div class="kpi"><div class="kpi-title">Prediction</div><div class="kpi-value">${predictionScore}</div></div>
             </div>
 
             <div class="result">
                 <h3>🎯 Probabilità attacco</h3>
-                <span class="badge badge-yellow">30 giorni: ${data.attack_probability_30d}%</span>
-                <span class="badge badge-red">90 giorni: ${data.attack_probability_90d}%</span>
+                <span class="badge badge-yellow">30 giorni: ${attack30}%</span>
+                <span class="badge badge-red">90 giorni: ${attack90}%</span>
             </div>
 
             <div class="result">
                 <h3>⚠️ Rischio principale</h3>
-                <p>${data.main_risk}</p>
+                <p>${safeValue(data.main_risk, "Nessun rischio principale rilevato.")}</p>
             </div>
 
             <div class="result">
                 <h3>🤖 Raccomandazione</h3>
-                <p>${data.recommendation}</p>
+                <p>${safeValue(data.recommendation, "Continuare il monitoraggio.")}</p>
             </div>
         </div>
     `;
@@ -296,29 +301,30 @@ async function loadCyberPredictions() {
     const companyId = getCompanyId();
     const data = await apiGet(`/api/cyber-predictions/${companyId}`);
 
-    if (!Array.isArray(data)) {
-        document.getElementById("cyberResult").innerHTML =
-            `<div class="result">${data.error || "Errore caricamento predictions"}</div>`;
+    if (data.error) {
+        showError("cyberResult", data.error);
         return;
     }
+
+    const predictions = safeArray(data);
 
     document.getElementById("cyberResult").innerHTML = `
         <div class="card">
             <h3>Cyber Predictions salvate</h3>
             ${
-                data.length > 0
-                    ? data.map(p => `
+                predictions.length > 0
+                    ? predictions.map(p => `
                         <div class="result">
-                            <span class="badge ${badgeClass(p.level)}">${p.level}</span>
-                            <b>Cyber Score: ${p.cyber_score}/100</b><br>
-                            30 giorni: ${p.attack_probability_30d}%<br>
-                            90 giorni: ${p.attack_probability_90d}%<br>
-                            Trend: ${p.trend}<br>
-                            Rischio: ${p.main_risk}<br>
-                            Raccomandazione: ${p.recommendation}
+                            <span class="badge ${badgeClass(p.level)}">${safeValue(p.level)}</span>
+                            <b>Cyber Score: ${safeNumber(p.cyber_score)}/100</b><br>
+                            30 giorni: ${safeNumber(p.attack_probability_30d)}%<br>
+                            90 giorni: ${safeNumber(p.attack_probability_90d)}%<br>
+                            Trend: ${safeValue(p.trend)}<br>
+                            Rischio: ${safeValue(p.main_risk)}<br>
+                            Raccomandazione: ${safeValue(p.recommendation)}
                         </div>
                     `).join("")
-                    : "<p>Nessuna prediction cyber.</p>"
+                    : "<p>Nessuna prediction cyber presente.</p>"
             }
         </div>
     `;
@@ -328,30 +334,31 @@ async function loadCyberTimeline() {
     const companyId = getCompanyId();
     const data = await apiGet(`/api/cyber-timeline/${companyId}`);
 
-    if (!Array.isArray(data)) {
-        document.getElementById("cyberResult").innerHTML =
-            `<div class="result">${data.error || "Errore timeline cyber"}</div>`;
+    if (data.error) {
+        showError("cyberResult", data.error);
         return;
     }
+
+    const timeline = safeArray(data);
 
     document.getElementById("cyberResult").innerHTML = `
         <div class="card">
             <h3>📈 Cyber Timeline</h3>
             ${
-                data.length > 0
-                    ? data.map((s, index) => `
+                timeline.length > 0
+                    ? timeline.map((s, index) => `
                         <div class="result">
                             <span class="badge badge-blue">Snapshot #${index + 1}</span>
-                            <b>Cyber Score: ${s.cyber_score}/100</b>
-                            ${progressBar(s.cyber_score)}
-                            Exposure: ${s.exposure_score}<br>
-                            Vulnerability: ${s.vulnerability_score}<br>
-                            Threat: ${s.threat_score}<br>
-                            Prediction: ${s.prediction_score}<br>
-                            Data: ${s.created_at}
+                            <b>Cyber Score: ${safeNumber(s.cyber_score)}/100</b>
+                            ${progressBar(safeNumber(s.cyber_score))}
+                            Exposure: ${safeNumber(s.exposure_score)}<br>
+                            Vulnerability: ${safeNumber(s.vulnerability_score)}<br>
+                            Threat: ${safeNumber(s.threat_score)}<br>
+                            Prediction: ${safeNumber(s.prediction_score)}<br>
+                            Data: ${safeValue(s.created_at)}
                         </div>
                     `).join("")
-                    : "<p>Nessuna timeline cyber ancora presente.</p>"
+                    : "<p>Nessuna timeline cyber disponibile.</p>"
             }
         </div>
     `;

@@ -56,7 +56,18 @@
         <p id="userInfo"></p>
       </div>
 
-      <input id="globalCompanyId" placeholder="ID azienda" value="1">
+      <div class="top-actions">
+  <input id="globalCompanyId" placeholder="ID azienda" value="1">
+
+  <button class="notification-btn" onclick="toggleNotifications()">
+    🔔 <span id="notificationCount">0</span>
+  </button>
+
+  <div id="notificationPanel" class="notification-panel hidden">
+    <h3>Notification Center</h3>
+    <div id="notificationBox"></div>
+  </div>
+</div>
     </header>
 
     <section id="pageContent"></section>
@@ -74,6 +85,7 @@
 <script src="js/cyber.js"></script>
 <script src="js/assistant.js"></script>
 <script src="js/import.js"></script>
+<script src="js/notifications.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/reports.js"></script>
 

@@ -19,31 +19,32 @@ async function loadOracleTimelineReport() {
     const companyId = getCompanyId();
     const data = await apiGet(`/api/oracle-timeline/${companyId}`);
 
-    if (!Array.isArray(data)) {
-        document.getElementById("reportsResult").innerHTML =
-            `<div class="result">${data.error || "Errore timeline"}</div>`;
+    if (data.error) {
+        showError("reportsResult", data.error);
         return;
     }
+
+    const timeline = safeArray(data);
 
     document.getElementById("reportsResult").innerHTML = `
         <div class="card">
             <h3>📈 Oracle Score Timeline</h3>
             ${
-                data.length > 0
-                    ? data.map((s, i) => `
+                timeline.length > 0
+                    ? timeline.map((s, i) => `
                         <div class="result">
                             <span class="badge badge-blue">Snapshot #${i + 1}</span>
-                            <b>Oracle Score: ${s.oracle_score}/100</b>
-                            ${progressBar(s.oracle_score)}
-                            Finance: ${s.finance_score}<br>
-                            Business Health: ${s.business_health_score}<br>
-                            Customer: ${s.customer_score}<br>
-                            Compliance: ${s.compliance_score}<br>
-                            Cyber: ${s.cyber_score}<br>
-                            Data: ${s.created_at}
+                            <b>Oracle Score: ${safeNumber(s.oracle_score)}/100</b>
+                            ${progressBar(safeNumber(s.oracle_score))}
+                            Finance: ${safeNumber(s.finance_score)}<br>
+                            Business Health: ${safeNumber(s.business_health_score)}<br>
+                            Customer: ${safeNumber(s.customer_score)}<br>
+                            Compliance: ${safeNumber(s.compliance_score)}<br>
+                            Cyber: ${safeNumber(s.cyber_score)}<br>
+                            Data: ${safeValue(s.created_at)}
                         </div>
                     `).join("")
-                    : "<p>Nessuno storico Oracle disponibile.</p>"
+                    : "<p>Nessuno storico Oracle disponibile. Calcola Oracle Score almeno una volta.</p>"
             }
         </div>
     `;
@@ -53,30 +54,31 @@ async function loadCyberTimelineReport() {
     const companyId = getCompanyId();
     const data = await apiGet(`/api/cyber-timeline/${companyId}`);
 
-    if (!Array.isArray(data)) {
-        document.getElementById("reportsResult").innerHTML =
-            `<div class="result">${data.error || "Errore cyber timeline"}</div>`;
+    if (data.error) {
+        showError("reportsResult", data.error);
         return;
     }
+
+    const timeline = safeArray(data);
 
     document.getElementById("reportsResult").innerHTML = `
         <div class="card">
             <h3>🛡 Cyber Timeline</h3>
             ${
-                data.length > 0
-                    ? data.map((s, i) => `
+                timeline.length > 0
+                    ? timeline.map((s, i) => `
                         <div class="result">
                             <span class="badge badge-blue">Cyber Snapshot #${i + 1}</span>
-                            <b>Cyber Score: ${s.cyber_score}/100</b>
-                            ${progressBar(s.cyber_score)}
-                            Exposure: ${s.exposure_score}<br>
-                            Vulnerability: ${s.vulnerability_score}<br>
-                            Threat: ${s.threat_score}<br>
-                            Prediction: ${s.prediction_score}<br>
-                            Data: ${s.created_at}
+                            <b>Cyber Score: ${safeNumber(s.cyber_score)}/100</b>
+                            ${progressBar(safeNumber(s.cyber_score))}
+                            Exposure: ${safeNumber(s.exposure_score)}<br>
+                            Vulnerability: ${safeNumber(s.vulnerability_score)}<br>
+                            Threat: ${safeNumber(s.threat_score)}<br>
+                            Prediction: ${safeNumber(s.prediction_score)}<br>
+                            Data: ${safeValue(s.created_at)}
                         </div>
                     `).join("")
-                    : "<p>Nessuno storico cyber disponibile.</p>"
+                    : "<p>Nessuna cyber timeline disponibile. Esegui Cyber Oracle AI almeno una volta.</p>"
             }
         </div>
     `;
@@ -87,10 +89,11 @@ async function loadRevenueAnalyticsReport() {
     const data = await apiGet(`/api/revenue-analytics/${companyId}`);
 
     if (data.error) {
-        document.getElementById("reportsResult").innerHTML =
-            `<div class="result">${data.error}</div>`;
+        showError("reportsResult", data.error);
         return;
     }
+
+    const trend = safeArray(data.trend);
 
     document.getElementById("reportsResult").innerHTML = `
         <div class="card">
@@ -99,27 +102,28 @@ async function loadRevenueAnalyticsReport() {
             <div class="kpi-grid">
                 <div class="kpi">
                     <div class="kpi-title">Entrate totali</div>
-                    <div class="kpi-value">€${data.total_revenue}</div>
+                    <div class="kpi-value">€${safeNumber(data.total_revenue)}</div>
                 </div>
 
                 <div class="kpi">
                     <div class="kpi-title">Operazioni</div>
-                    <div class="kpi-value">${data.operations}</div>
+                    <div class="kpi-value">${safeNumber(data.operations)}</div>
                 </div>
             </div>
 
             <div class="result">
                 <h3>Trend entrate</h3>
                 ${
-                    data.trend && data.trend.length > 0
-                        ? data.trend.map(x => `
+                    trend.length > 0
+                        ? trend.map(x => `
                             <p>
-                                <b>${x.label}</b> — €${x.amount}
-                                — Totale progressivo: €${x.total}
-                                — ${x.payment_method}
+                                <b>${safeValue(x.label)}</b> —
+                                €${safeNumber(x.amount)} —
+                                Totale progressivo: €${safeNumber(x.total)} —
+                                ${safeValue(x.payment_method)}
                             </p>
                         `).join("")
-                        : "Nessun dato revenue."
+                        : "Nessun dato revenue disponibile."
                 }
             </div>
         </div>

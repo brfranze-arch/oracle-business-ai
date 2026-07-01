@@ -4,7 +4,7 @@ function renderFinance() {
     setContent(`
         <div class="card">
             <h2>💰 Finance Oracle AI</h2>
-            <p>Gestione entrate, metodi di pagamento e analisi finanziaria AI.</p>
+            <p>Entrate, metodi di pagamento, riepilogo finanziario e analisi AI.</p>
 
             <div class="grid-2">
                 <div>
@@ -23,10 +23,10 @@ function renderFinance() {
                 </div>
 
                 <div>
-                    <h3>Analisi Finance</h3>
+                    <h3>Azioni Finance</h3>
                     <button onclick="loadFinanceSummary()">Riepilogo entrate</button>
                     <button onclick="analyzeFinance()">Analisi AI Finance</button>
-                    <button onclick="loadOracleScoreFinance()">Aggiorna Oracle Score</button>
+                    <button onclick="loadOracleScoreFinance()">Oracle Score</button>
                 </div>
             </div>
 
@@ -40,11 +40,11 @@ async function addRevenue() {
 
     const params = new URLSearchParams({
         company_id: companyId,
-        amount: document.getElementById("revenueAmount").value,
+        amount: document.getElementById("revenueAmount").value || 0,
         payment_method: document.getElementById("revenuePayment").value,
-        category: document.getElementById("revenueCategory").value,
+        category: document.getElementById("revenueCategory").value || "generale",
         customer_id: document.getElementById("revenueCustomerId").value || "",
-        note: document.getElementById("revenueNote").value
+        note: document.getElementById("revenueNote").value || ""
     });
 
     const res = await fetch(`${API}/api/revenues?${params}`, {
@@ -54,11 +54,18 @@ async function addRevenue() {
 
     const data = await res.json();
 
+    if (data.error) {
+        showError("financeResult", data.error);
+        return;
+    }
+
     document.getElementById("financeResult").innerHTML = `
         <div class="result">
-            Entrata registrata: <b>€${data.amount}</b><br>
-            Metodo: ${data.payment_method}<br>
-            Categoria: ${data.category}
+            Entrata registrata.<br>
+            ID: <b>${safeValue(data.id)}</b><br>
+            Importo: <b>€${safeNumber(data.amount)}</b><br>
+            Metodo: ${safeValue(data.payment_method)}<br>
+            Categoria: ${safeValue(data.category)}
         </div>
     `;
 }
@@ -67,6 +74,18 @@ async function loadFinanceSummary() {
     const companyId = getCompanyId();
     const data = await apiGet(`/api/finance-summary/${companyId}`);
 
+    if (data.error) {
+        showError("financeResult", data.error);
+        return;
+    }
+
+    const total = safeNumber(data.total);
+    const cash = safeNumber(data.cash);
+    const pos = safeNumber(data.pos);
+    const bank = safeNumber(data.bank);
+    const digital = safeNumber(data.digital);
+    const count = safeNumber(data.count);
+
     document.getElementById("financeResult").innerHTML = `
         <div class="card">
             <h3>Riepilogo Finance</h3>
@@ -74,27 +93,32 @@ async function loadFinanceSummary() {
             <div class="kpi-grid">
                 <div class="kpi">
                     <div class="kpi-title">Totale</div>
-                    <div class="kpi-value">€${data.total}</div>
+                    <div class="kpi-value">€${total}</div>
                 </div>
+
                 <div class="kpi">
                     <div class="kpi-title">Contanti</div>
-                    <div class="kpi-value">€${data.cash}</div>
+                    <div class="kpi-value">€${cash}</div>
                 </div>
+
                 <div class="kpi">
                     <div class="kpi-title">POS</div>
-                    <div class="kpi-value">€${data.pos}</div>
+                    <div class="kpi-value">€${pos}</div>
                 </div>
+
                 <div class="kpi">
                     <div class="kpi-title">Bonifico</div>
-                    <div class="kpi-value">€${data.bank}</div>
+                    <div class="kpi-value">€${bank}</div>
                 </div>
+
                 <div class="kpi">
                     <div class="kpi-title">Digitale</div>
-                    <div class="kpi-value">€${data.digital}</div>
+                    <div class="kpi-value">€${digital}</div>
                 </div>
+
                 <div class="kpi">
                     <div class="kpi-title">Operazioni</div>
-                    <div class="kpi-value">${data.count}</div>
+                    <div class="kpi-value">${count}</div>
                 </div>
             </div>
         </div>
@@ -103,24 +127,28 @@ async function loadFinanceSummary() {
 
 async function analyzeFinance() {
     const companyId = getCompanyId();
-
     const data = await apiPost(`/api/ai/analyze-finance/${companyId}`);
 
     if (data.error) {
-        document.getElementById("financeResult").innerHTML =
-            `<div class="result">${data.error}</div>`;
+        showError("financeResult", data.error);
         return;
     }
 
+    const score = safeNumber(data.score);
+    const level = safeValue(data.level, "STABILE");
+
     document.getElementById("financeResult").innerHTML = `
         <div class="card">
-            <h3>${data.title}</h3>
-            <span class="badge ${badgeClass(data.level)}">${data.level}</span>
+            <h3>${safeValue(data.title, "Analisi Finance AI")}</h3>
 
-            <div class="kpi-value">${data.score}/100</div>
-            ${progressBar(data.score)}
+            <span class="badge ${badgeClass(level)}">${level}</span>
 
-            <p>${data.message}</p>
+            <div class="kpi-value">${score}/100</div>
+            ${progressBar(score)}
+
+            <div class="result">
+                ${safeValue(data.message, "Nessun messaggio AI disponibile.")}
+            </div>
         </div>
     `;
 }
@@ -129,15 +157,29 @@ async function loadOracleScoreFinance() {
     const companyId = getCompanyId();
     const data = await apiGet(`/api/oracle-score/${companyId}`);
 
+    if (data.error) {
+        showError("financeResult", data.error);
+        return;
+    }
+
+    const oracleScore = safeNumber(data.oracle_score);
+    const financeScore = safeNumber(data.finance_score);
+    const level = safeValue(data.level, "STABILE");
+
     document.getElementById("financeResult").innerHTML = `
         <div class="card">
             <h3>Oracle Score aggiornato</h3>
-            <span class="badge ${badgeClass(data.level)}">${data.level}</span>
-            <div class="kpi-value">${data.oracle_score}/100</div>
-            ${progressBar(data.oracle_score)}
 
-            <p>Finance Score: <b>${data.finance_score}</b></p>
-            ${progressBar(data.finance_score)}
+            <span class="badge ${badgeClass(level)}">${level}</span>
+
+            <div class="kpi-value">${oracleScore}/100</div>
+            ${progressBar(oracleScore)}
+
+            <div class="result">
+                <h3>Finance Score</h3>
+                <b>${financeScore}/100</b>
+                ${progressBar(financeScore)}
+            </div>
         </div>
     `;
 }

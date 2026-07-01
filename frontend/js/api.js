@@ -1,44 +1,46 @@
-const API="https://oracle-business-ai-backend.onrender.com/";
+const API = "https://oracle-business-ai-backend.onrender.com";
 
-function token(){
-
+function token() {
     return localStorage.getItem("oracle_token");
 }
 
-function authHeaders(){
-
-    return{
-
-        Authorization:`Bearer ${token()}`
+function authHeaders() {
+    return {
+        Authorization: `Bearer ${token()}`
     };
 }
 
-async function apiGet(url){
+async function apiGet(url) {
+    try {
+        const res = await fetch(API + url, {
+            headers: authHeaders()
+        });
 
-    const res=await fetch(API+url,{
-        headers:authHeaders()
-    });
-
-    return await res.json();
-}
-
-async function apiPost(url,body=null){
-
-    const options={
-
-        method:"POST",
-
-        headers:authHeaders()
-    };
-
-    if(body){
-
-        options.headers["Content-Type"]="application/json";
-
-        options.body=JSON.stringify(body);
+        return await res.json();
+    } catch (e) {
+        return {
+            error: "Errore di connessione al backend."
+        };
     }
+}
 
-    const res=await fetch(API+url,options);
+async function apiPost(url, body = null) {
+    try {
+        const options = {
+            method: "POST",
+            headers: authHeaders()
+        };
 
-    return await res.json();
+        if (body) {
+            options.headers["Content-Type"] = "application/json";
+            options.body = JSON.stringify(body);
+        }
+
+        const res = await fetch(API + url, options);
+        return await res.json();
+    } catch (e) {
+        return {
+            error: "Errore di connessione al backend."
+        };
+    }
 }
