@@ -15,6 +15,7 @@ function showPage(page, clickedButton = null) {
     else if (page === "assistant") renderAssistant();
     else if (page === "import") renderImport();
     else if (page === "reports") renderReports();
+    else if (page === "billing") renderBilling();
     else if (page === "settings") renderSettings();
 }
 

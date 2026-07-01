@@ -1,3 +1,12 @@
+import billing_models
+from billing_models import Plan, PlanPermission, Subscription, Invoice, PaymentMethod
+from billing_engine import (
+    seed_default_plans,
+    create_free_subscription_for_user,
+    get_user_subscription,
+    get_user_permissions,
+    user_has_permission
+)
 from fastapi import FastAPI, Depends, Header, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,6 +52,9 @@ from ai_engine import (
 from auth_utils import hash_password, verify_password, generate_token
 
 Base.metadata.create_all(bind=engine)
+
+with SessionLocal() as db:
+    seed_default_plans(db)
 
 app = FastAPI(title="Oracle Business AI")
 
@@ -108,6 +120,8 @@ def register(
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    create_free_subscription_for_user(db, user.id)
 
     token = generate_token()
 
@@ -1397,4 +1411,111 @@ def daily_brief(
         "level": oracle_score_data["level"],
         "brief": brief,
         "priorities": priorities
+    }
+
+@app.get("/api/billing/plans")
+def billing_plans(db: Session = Depends(get_db)):
+    plans = db.query(Plan).filter(Plan.active == True).all()
+
+    result = []
+
+    for plan in plans:
+        permissions = db.query(PlanPermission).filter(
+            PlanPermission.plan_id == plan.id
+        ).first()
+
+        result.append({
+            "id": plan.id,
+            "name": plan.name,
+            "price_month": plan.price_month,
+            "price_year": plan.price_year,
+            "max_companies": plan.max_companies,
+            "max_users": plan.max_users,
+            "description": plan.description,
+            "permissions": {
+                "finance": permissions.finance if permissions else False,
+                "customer": permissions.customer if permissions else False,
+                "compliance": permissions.compliance if permissions else False,
+                "cyber": permissions.cyber if permissions else False,
+                "assistant": permissions.assistant if permissions else False,
+                "reports": permissions.reports if permissions else False,
+                "timeline": permissions.timeline if permissions else False,
+                "import_data": permissions.import_data if permissions else False,
+                "openai": permissions.openai if permissions else False,
+                "osint": permissions.osint if permissions else False,
+                "predictive": permissions.predictive if permissions else False,
+                "agents": permissions.agents if permissions else False,
+                "multi_company": permissions.multi_company if permissions else False,
+                "pdf_export": permissions.pdf_export if permissions else False,
+                "api_access": permissions.api_access if permissions else False,
+            }
+        })
+
+    return result
+
+
+@app.get("/api/billing/me")
+def billing_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    subscription = get_user_subscription(db, current_user.id)
+    permissions = get_user_permissions(db, current_user.id)
+
+    return {
+        "user_id": current_user.id,
+        "plan": subscription.plan,
+        "status": subscription.status,
+        "trial": subscription.trial,
+        "trial_end": subscription.trial_end,
+        "provider": subscription.provider,
+        "renewal_date": subscription.renewal_date,
+        "cancel_date": subscription.cancel_date,
+        "permissions": permissions
+    }
+
+
+@app.get("/api/me/permissions")
+def my_permissions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    return get_user_permissions(db, current_user.id)
+
+
+@app.post("/api/billing/change-plan")
+def change_plan(
+    plan: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    selected_plan = db.query(Plan).filter(
+        Plan.name == plan.upper(),
+        Plan.active == True
+    ).first()
+
+    if not selected_plan:
+        return {"error": "Piano non valido"}
+
+    subscription = get_user_subscription(db, current_user.id)
+    subscription.plan = selected_plan.name
+    subscription.status = "active"
+    subscription.provider = "internal"
+
+    db.commit()
+    db.refresh(subscription)
+
+    return {
+        "message": "Piano aggiornato",
+        "plan": subscription.plan,
+        "permissions": get_user_permissions(db, current_user.id)
     }
