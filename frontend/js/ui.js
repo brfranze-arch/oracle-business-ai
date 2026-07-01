@@ -1,10 +1,30 @@
-function showPage(page, clickedButton = null) {
+async function showPage(page, clickedButton = null) {
     document.querySelectorAll(".nav-btn").forEach(btn => {
         btn.classList.remove("active");
     });
 
     if (clickedButton) {
         clickedButton.classList.add("active");
+    }
+
+    const permissions = await getPermissions();
+
+    if (page === "cyber" && !permissions.cyber) {
+        setPageTitle("Cyber Oracle AI");
+        upgradeBlock("Cyber Oracle AI", "PROFESSIONAL");
+        return;
+    }
+
+    if (page === "reports" && !permissions.reports) {
+        setPageTitle("Reports");
+        upgradeBlock("Reports & Timeline", "PROFESSIONAL");
+        return;
+    }
+
+    if (page === "import" && !permissions.import_data) {
+        setPageTitle("Import AI");
+        upgradeBlock("Oracle Import AI", "PROFESSIONAL");
+        return;
     }
 
     if (page === "dashboard") renderDashboard();
@@ -98,4 +118,31 @@ function refreshUserInfo() {
 
     const user = JSON.parse(userRaw);
     userInfo.innerText = `Connesso come ${user.name} — ${user.email}`;
+}
+
+async function getPermissions() {
+    const data = await apiGet("/api/me/permissions");
+
+    if (data.error) {
+        return {};
+    }
+
+    return data;
+}
+
+function upgradeBlock(moduleName, requiredPlan = "PROFESSIONAL") {
+    setContent(`
+        <div class="card">
+            <h2>🔒 ${moduleName} bloccato</h2>
+            <p>Questo modulo è disponibile dal piano <b>${requiredPlan}</b>.</p>
+
+            <div class="result">
+                Per sbloccare questa funzione, vai nella sezione Billing e aggiorna il piano.
+            </div>
+
+            <button onclick="showPage('billing')">
+                Vai a Billing
+            </button>
+        </div>
+    `);
 }
