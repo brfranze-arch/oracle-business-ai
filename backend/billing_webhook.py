@@ -1,15 +1,21 @@
 from datetime import datetime
+import json
 
 from billing_models import Subscription, Invoice
 from billing_engine import get_user_subscription
 
 
 def stripe_to_dict(obj):
-    if hasattr(obj, "to_dict_recursive"):
-        return obj.to_dict_recursive()
     if isinstance(obj, dict):
         return obj
-    return dict(obj)
+
+    if hasattr(obj, "to_dict_recursive"):
+        return obj.to_dict_recursive()
+
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+
+    return json.loads(str(obj))
 
 
 def process_stripe_event(event, db):
