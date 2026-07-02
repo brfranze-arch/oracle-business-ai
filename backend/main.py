@@ -1,4 +1,10 @@
 import billing_models
+from tenant_models import Tenant, TenantMember
+from tenant_engine import (
+    create_default_tenant_for_user,
+    get_user_tenants,
+    user_can_access_tenant
+)
 from stripe_engine import StripeEngine
 from billing_models import Plan, PlanPermission, Subscription, Invoice, PaymentMethod
 from billing_engine import (
@@ -124,6 +130,7 @@ def register(
     db.refresh(user)
 
     create_free_subscription_for_user(db, user.id)
+    create_default_tenant_for_user(db, user)
 
     token = generate_token()
 
@@ -1608,3 +1615,67 @@ def billing_invoices(
     ).order_by(Invoice.created_at.desc()).all()
 
     return invoices
+
+@app.post("/api/tenants")
+def create_tenant(
+    name: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    tenant = Tenant(
+        name=name,
+        owner_user_id=current_user.id,
+        plan="FREE"
+    )
+
+    db.add(tenant)
+    db.commit()
+    db.refresh(tenant)
+
+    member = TenantMember(
+        tenant_id=tenant.id,
+        user_id=current_user.id,
+        role="owner"
+    )
+
+    db.add(member)
+    db.commit()
+
+    return tenant
+
+
+@app.get("/api/tenants")
+def my_tenants(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    tenants = get_user_tenants(db, current_user.id)
+
+    if not tenants:
+        default_tenant = create_default_tenant_for_user(db, current_user)
+        tenants = [default_tenant]
+
+    return tenants
+
+
+@app.get("/api/tenants/{tenant_id}/members")
+def tenant_members(
+    tenant_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_tenant(db, current_user.id, tenant_id):
+        return {"error": "Non autorizzato"}
+
+    return db.query(TenantMember).filter(
+        TenantMember.tenant_id == tenant_id
+    ).all()
