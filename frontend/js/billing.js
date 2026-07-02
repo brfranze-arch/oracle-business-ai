@@ -8,6 +8,7 @@ function renderBilling() {
 
             <button onclick="loadBillingMe()">Carica piano attuale</button>
             <button onclick="loadBillingPlans()">Carica piani disponibili</button>
+            <button onclick="loadBillingInvoices()">Carica fatture</button>
 
             <div id="billingResult"></div>
         </div>
@@ -211,4 +212,42 @@ async function openCustomerPortal() {
     }
 
     window.location.href = data.portal_url;
+}
+
+async function loadBillingInvoices() {
+    const data = await apiGet("/api/billing/invoices");
+
+    if (data.error) {
+        showError("billingResult", data.error);
+        return;
+    }
+
+    const invoices = safeArray(data);
+
+    document.getElementById("billingResult").innerHTML = `
+        <div class="card">
+            <h3>Storico fatture</h3>
+
+            ${
+                invoices.length > 0
+                    ? invoices.map(inv => `
+                        <div class="result">
+                            <span class="badge ${inv.status === "paid" ? "badge-green" : "badge-yellow"}">
+                                ${safeValue(inv.status)}
+                            </span>
+                            <b>${safeValue(inv.invoice_number)}</b><br>
+                            Importo: €${safeNumber(inv.amount)} ${safeValue(inv.currency)}<br>
+                            Provider: ${safeValue(inv.provider)}<br>
+                            Data: ${safeValue(inv.created_at)}<br><br>
+                            ${
+                                inv.invoice_url
+                                    ? `<button onclick="window.open('${inv.invoice_url}', '_blank')">Apri fattura</button>`
+                                    : ""
+                            }
+                        </div>
+                    `).join("")
+                    : "<p>Nessuna fattura ancora registrata.</p>"
+            }
+        </div>
+    `;
 }

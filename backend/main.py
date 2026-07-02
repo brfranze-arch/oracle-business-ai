@@ -1592,3 +1592,19 @@ def billing_customer_portal(
 
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/api/billing/invoices")
+def billing_invoices(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    subscription = get_user_subscription(db, current_user.id)
+
+    invoices = db.query(Invoice).filter(
+        Invoice.subscription_id == subscription.id
+    ).order_by(Invoice.created_at.desc()).all()
+
+    return invoices
