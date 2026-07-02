@@ -63,6 +63,11 @@ async function loadBillingMe() {
                 <h3>Permessi attivi</h3>
                 ${renderPermissionList(permissions)}
             </div>
+
+            <br><br>
+            <button onclick="openCustomerPortal()">
+                Gestisci abbonamento Stripe
+            </button>
         </div>
     `;
 }
@@ -190,4 +195,20 @@ async function startStripeCheckout(planName) {
     }
 
     window.location.href = data.checkout_url;
+}
+
+async function openCustomerPortal() {
+    const res = await fetch(`${API}/api/billing/customer-portal`, {
+        method: "POST",
+        headers: authHeaders()
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        showError("billingResult", data.error);
+        return;
+    }
+
+    window.location.href = data.portal_url;
 }

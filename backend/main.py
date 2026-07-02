@@ -1567,3 +1567,28 @@ async def stripe_webhook(
         return {"error": str(e)}
 
     return process_stripe_event(event, db)
+
+@app.post("/api/billing/customer-portal")
+def billing_customer_portal(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    subscription = get_user_subscription(db, current_user.id)
+
+    if not subscription.provider_customer:
+        return {"error": "Nessun cliente Stripe collegato"}
+
+    try:
+        session = StripeEngine.create_customer_portal(
+            subscription.provider_customer
+        )
+
+        return {
+            "portal_url": session.url
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
