@@ -8,7 +8,8 @@ from billing_engine import (
     get_user_permissions,
     user_has_permission
 )
-from fastapi import FastAPI, Depends, Header, UploadFile, File
+from billing_webhook import process_stripe_event
+from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -1551,3 +1552,18 @@ def stripe_checkout(
 
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/api/billing/stripe-webhook")
+async def stripe_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+
+    try:
+        event = StripeEngine.construct_webhook_event(payload, sig_header)
+    except Exception as e:
+        return {"error": str(e)}
+
+    return process_stripe_event(event, db)
