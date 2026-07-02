@@ -129,9 +129,10 @@ async function loadBillingPlans() {
                                 Annuale: €${safeNumber(plan.price_year)}
                             </p>
 
-                            <button onclick="changeBillingPlan('${plan.name}')">
-                                Seleziona ${plan.name}
-                            </button>
+                            ${plan.name === "FREE"
+                                ? `<button onclick="changeBillingPlan('${plan.name}')">Usa FREE</button>`
+                                : `<button onclick="startStripeCheckout('${plan.name}')">Abbonati ${plan.name}</button>`
+                            }
                         </div>
                     `).join("")
                 }
@@ -169,4 +170,24 @@ async function changeBillingPlan(planName) {
             <button onclick="loadBillingMe()">Ricarica Billing</button>
         </div>
     `;
+}
+
+async function startStripeCheckout(planName) {
+    const params = new URLSearchParams({
+        plan: planName
+    });
+
+    const res = await fetch(`${API}/api/billing/stripe-checkout?${params}`, {
+        method: "POST",
+        headers: authHeaders()
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        showError("billingResult", data.error);
+        return;
+    }
+
+    window.location.href = data.checkout_url;
 }

@@ -1,4 +1,5 @@
 import billing_models
+from stripe_engine import StripeEngine
 from billing_models import Plan, PlanPermission, Subscription, Invoice, PaymentMethod
 from billing_engine import (
     seed_default_plans,
@@ -1519,3 +1520,34 @@ def change_plan(
         "plan": subscription.plan,
         "permissions": get_user_permissions(db, current_user.id)
     }
+
+@app.post("/api/billing/stripe-checkout")
+def stripe_checkout(
+    plan: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    selected_plan = db.query(Plan).filter(
+        Plan.name == plan.upper(),
+        Plan.active == True
+    ).first()
+
+    if not selected_plan:
+        return {"error": "Piano non valido"}
+
+    if selected_plan.name == "FREE":
+        return {"error": "Il piano FREE non richiede pagamento"}
+
+    try:
+        session = StripeEngine.create_checkout_session(current_user, selected_plan.name)
+
+        return {
+            "checkout_url": session.url,
+            "session_id": session.id
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
