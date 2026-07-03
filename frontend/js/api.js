@@ -5,9 +5,17 @@ function token() {
 }
 
 function authHeaders() {
+
     return {
-        Authorization: `Bearer ${token()}`
+
+        "Authorization":
+            "Bearer " + localStorage.getItem("oracle_token"),
+
+        "X-Tenant-Id":
+            getTenantId()
+
     };
+
 }
 
 async function apiGet(url) {
