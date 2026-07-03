@@ -491,3 +491,8 @@ input,textarea,select{
 .notification-item.info{
     border-color:#38bdf8;
 }
+
+#tenantSelectorBox select {
+    min-width: 220px;
+    margin-bottom: 0;
+}

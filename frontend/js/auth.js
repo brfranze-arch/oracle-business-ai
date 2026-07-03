@@ -83,6 +83,8 @@ function startApp() {
     }
 
     renderDashboard();
+    refreshUserInfo();
+    loadTenantSelector();
 }
 
 window.addEventListener("load", function () {
