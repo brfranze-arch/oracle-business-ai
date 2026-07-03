@@ -1,4 +1,4 @@
-from tenant_models import Tenant, TenantMember
+from tenant_models import Tenant, TenantMember, TenantCompany
 
 
 def create_default_tenant_for_user(db, user):
@@ -53,3 +53,32 @@ def user_can_access_tenant(db, user_id: int, tenant_id: int):
     ).first()
 
     return member is not None
+
+
+def link_company_to_tenant(db, tenant_id: int, company_id: int):
+    existing = db.query(TenantCompany).filter(
+        TenantCompany.tenant_id == tenant_id,
+        TenantCompany.company_id == company_id
+    ).first()
+
+    if existing:
+        return existing
+
+    link = TenantCompany(
+        tenant_id=tenant_id,
+        company_id=company_id
+    )
+
+    db.add(link)
+    db.commit()
+    db.refresh(link)
+
+    return link
+
+
+def get_tenant_company_ids(db, tenant_id: int):
+    links = db.query(TenantCompany).filter(
+        TenantCompany.tenant_id == tenant_id
+    ).all()
+
+    return [l.company_id for l in links]

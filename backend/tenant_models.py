@@ -20,5 +20,14 @@ class TenantMember(Base):
     id = Column(Integer, primary_key=True, index=True)
     tenant_id = Column(Integer, index=True)
     user_id = Column(Integer, index=True)
-    role = Column(String, default="owner")  # owner, admin, member, viewer
+    role = Column(String, default="owner")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class TenantCompany(Base):
+    __tablename__ = "tenant_companies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, index=True)
+    company_id = Column(Integer, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)

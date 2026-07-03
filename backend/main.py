@@ -1,9 +1,11 @@
 import billing_models
-from tenant_models import Tenant, TenantMember
+from tenant_models import Tenant, TenantMember, TenantCompany
 from tenant_engine import (
     create_default_tenant_for_user,
     get_user_tenants,
-    user_can_access_tenant
+    user_can_access_tenant,
+    link_company_to_tenant,
+    get_tenant_company_ids
 )
 from stripe_engine import StripeEngine
 from billing_models import Plan, PlanPermission, Subscription, Invoice, PaymentMethod
@@ -1679,3 +1681,92 @@ def tenant_members(
     return db.query(TenantMember).filter(
         TenantMember.tenant_id == tenant_id
     ).all()
+
+@app.get("/api/tenant/companies")
+def tenant_companies(
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not x_tenant_id:
+        return {"error": "Tenant mancante"}
+
+    if not user_can_access_tenant(db, current_user.id, x_tenant_id):
+        return {"error": "Tenant non autorizzato"}
+
+    company_ids = get_tenant_company_ids(db, x_tenant_id)
+
+    if not company_ids:
+        return []
+
+    return db.query(Company).filter(
+        Company.id.in_(company_ids)
+    ).all()
+
+
+@app.post("/api/tenant/companies")
+def create_tenant_company(
+    name: str,
+    sector: str = "",
+    country: str = "Italia",
+    domain: str = "",
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not x_tenant_id:
+        return {"error": "Tenant mancante"}
+
+    if not user_can_access_tenant(db, current_user.id, x_tenant_id):
+        return {"error": "Tenant non autorizzato"}
+
+    company = Company(
+        name=name,
+        sector=sector,
+        country=country,
+        domain=domain,
+        owner_id=current_user.id
+    )
+
+    db.add(company)
+    db.commit()
+    db.refresh(company)
+
+    link_company_to_tenant(db, x_tenant_id, company.id)
+
+    return company
+
+
+@app.post("/api/tenant/link-company")
+def tenant_link_company(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_tenant(db, current_user.id, x_tenant_id):
+        return {"error": "Tenant non autorizzato"}
+
+    company = db.query(Company).filter(
+        Company.id == company_id
+    ).first()
+
+    if not company:
+        return {"error": "Azienda non trovata"}
+
+    link_company_to_tenant(db, x_tenant_id, company_id)
+
+    return {
+        "message": "Azienda collegata al tenant",
+        "tenant_id": x_tenant_id,
+        "company_id": company_id
+    }
