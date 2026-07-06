@@ -1,4 +1,5 @@
 import billing_models
+from tenant_security import user_can_access_company, tenant_company_error
 from tenant_models import Tenant, TenantMember, TenantCompany
 from tenant_engine import (
     create_default_tenant_for_user,
@@ -1769,4 +1770,27 @@ def tenant_link_company(
         "message": "Azienda collegata al tenant",
         "tenant_id": x_tenant_id,
         "company_id": company_id
+    }
+
+@app.get("/api/tenant/check-company/{company_id}")
+def check_tenant_company_access(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    allowed = user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    )
+
+    return {
+        "company_id": company_id,
+        "tenant_id": x_tenant_id,
+        "allowed": allowed
     }

@@ -9,6 +9,27 @@ async function showPage(page, clickedButton = null) {
 
     const permissions = await getPermissions();
 
+    const protectedPages = [
+    "dashboard",
+    "finance",
+    "customer",
+    "compliance",
+    "cyber",
+    "assistant",
+    "reports",
+    "import"
+];
+
+if (protectedPages.includes(page)) {
+    const allowedCompany = await checkSelectedCompanyAccess();
+
+    if (!allowedCompany) {
+        setPageTitle("Accesso azienda");
+        companyBlockedScreen();
+        return;
+    }
+}
+
     if (page === "cyber" && !permissions.cyber) {
         setPageTitle("Cyber Oracle AI");
         upgradeBlock("Cyber Oracle AI", "PROFESSIONAL");
@@ -142,6 +163,39 @@ function upgradeBlock(moduleName, requiredPlan = "PROFESSIONAL") {
 
             <button onclick="showPage('billing')">
                 Vai a Billing
+            </button>
+        </div>
+    `);
+}
+
+async function checkSelectedCompanyAccess() {
+    const companyId = getCompanyId();
+
+    if (!companyId) {
+        return false;
+    }
+
+    const data = await apiGet(`/api/tenant/check-company/${companyId}`);
+
+    if (data.error) {
+        return false;
+    }
+
+    return data.allowed === true;
+}
+
+function companyBlockedScreen() {
+    setContent(`
+        <div class="card">
+            <h2>🔒 Azienda non autorizzata</h2>
+            <p>L'azienda selezionata non appartiene al workspace corrente.</p>
+
+            <div class="result">
+                Vai in Settings, carica le aziende del workspace e seleziona un'azienda valida.
+            </div>
+
+            <button onclick="showPage('settings')">
+                Vai a Settings
             </button>
         </div>
     `);
