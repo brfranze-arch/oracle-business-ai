@@ -268,8 +268,21 @@ def add_revenue(
     category: str,
     customer_id: int = None,
     note: str = "",
-    db: Session = Depends(get_db)
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     revenue = Revenue(
         company_id=company_id,
         customer_id=customer_id,
@@ -287,14 +300,39 @@ def add_revenue(
 
 
 @app.get("/api/revenues/{company_id}")
-def get_revenues(company_id: int, db: Session = Depends(get_db)):
+def get_revenues(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(Revenue).filter(
         Revenue.company_id == company_id
     ).order_by(Revenue.created_at.desc()).all()
 
 
 @app.get("/api/finance-summary/{company_id}")
-def finance_summary(company_id: int, db: Session = Depends(get_db)):
+def finance_summary(company_id: int, db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user), x_tenant_id: int = Header(default=0)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     revenues = db.query(Revenue).filter(
         Revenue.company_id == company_id
     ).all()
@@ -317,7 +355,19 @@ def finance_summary(company_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/api/ai/analyze-finance/{company_id}")
-def ai_analyze_finance(company_id: int, db: Session = Depends(get_db)):
+def ai_analyze_finance(company_id: int, db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user), x_tenant_id: int = Header(default=0)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
@@ -346,7 +396,20 @@ def ai_analyze_finance(company_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/insights/{company_id}")
-def get_insights(company_id: int, db: Session = Depends(get_db)):
+def get_insights(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(AiInsight).filter(
         AiInsight.company_id == company_id
     ).order_by(AiInsight.created_at.desc()).all()
@@ -354,11 +417,20 @@ def get_insights(company_id: int, db: Session = Depends(get_db)):
 @app.get("/api/oracle-score/{company_id}")
 def oracle_score(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     company = db.query(Company).filter(
         Company.id == company_id
@@ -366,9 +438,6 @@ def oracle_score(
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     revenues = db.query(Revenue).filter(
         Revenue.company_id == company_id
@@ -421,7 +490,20 @@ def oracle_score(
     return result
 
 @app.post("/api/business-health/analyze/{company_id}")
-def analyze_business_health_api(company_id: int, db: Session = Depends(get_db)):
+def analyze_business_health_api(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
@@ -456,7 +538,20 @@ def analyze_business_health_api(company_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/business-health/{company_id}")
-def get_business_health_reports(company_id: int, db: Session = Depends(get_db)):
+def get_business_health_reports(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(BusinessHealthReport).filter(
         BusinessHealthReport.company_id == company_id
     ).order_by(BusinessHealthReport.created_at.desc()).all()
@@ -469,8 +564,21 @@ def create_customer(
     phone: str = "",
     customer_type: str = "",
     notes: str = "",
-    db: Session = Depends(get_db)
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     customer = Customer(
         company_id=company_id,
         name=name,
@@ -488,14 +596,40 @@ def create_customer(
 
 
 @app.get("/api/customers/{company_id}")
-def get_customers(company_id: int, db: Session = Depends(get_db)):
+def get_customers(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(Customer).filter(
         Customer.company_id == company_id
     ).all()
 
 
 @app.post("/api/customer-ai/{company_id}")
-def customer_ai(company_id: int, db: Session = Depends(get_db)):
+def customer_ai(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(
         Company.id == company_id
     ).first()
@@ -536,7 +670,20 @@ def customer_ai(company_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/customer-insights/{company_id}")
-def customer_insights(company_id: int, db: Session = Depends(get_db)):
+def customer_insights(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(CustomerInsight).filter(
         CustomerInsight.company_id == company_id
     ).order_by(
@@ -551,8 +698,21 @@ def create_compliance_item(
     status: str,
     due_date: str = "",
     notes: str = "",
-    db: Session = Depends(get_db)
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     item = ComplianceItem(
         company_id=company_id,
         title=title,
@@ -570,14 +730,40 @@ def create_compliance_item(
 
 
 @app.get("/api/compliance-items/{company_id}")
-def get_compliance_items(company_id: int, db: Session = Depends(get_db)):
+def get_compliance_items(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(ComplianceItem).filter(
         ComplianceItem.company_id == company_id
     ).all()
 
 
 @app.post("/api/compliance-ai/{company_id}")
-def compliance_ai(company_id: int, db: Session = Depends(get_db)):
+def compliance_ai(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(
         Company.id == company_id
     ).first()
@@ -611,7 +797,20 @@ def compliance_ai(company_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/compliance-insights/{company_id}")
-def compliance_insights(company_id: int, db: Session = Depends(get_db)):
+def compliance_insights(company_id: int, x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     return db.query(ComplianceInsight).filter(
         ComplianceInsight.company_id == company_id
     ).order_by(
@@ -622,11 +821,20 @@ def compliance_insights(company_id: int, db: Session = Depends(get_db)):
 def oracle_assistant(
     company_id: int,
     question: str,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     company = db.query(Company).filter(
         Company.id == company_id
@@ -634,9 +842,6 @@ def oracle_assistant(
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     revenues = db.query(Revenue).filter(
         Revenue.company_id == company_id
@@ -720,11 +925,20 @@ def oracle_assistant(
 @app.get("/api/oracle-memory/{company_id}")
 def get_oracle_memory(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     memories = db.query(OracleMemory).filter(
         OracleMemory.company_id == company_id
@@ -737,11 +951,20 @@ def get_oracle_memory(
 @app.get("/api/oracle-timeline/{company_id}")
 def oracle_timeline(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     company = db.query(Company).filter(
         Company.id == company_id
@@ -749,9 +972,6 @@ def oracle_timeline(
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     snapshots = db.query(OracleScoreSnapshot).filter(
         OracleScoreSnapshot.company_id == company_id
@@ -764,19 +984,25 @@ def oracle_timeline(
 @app.get("/api/revenue-analytics/{company_id}")
 def revenue_analytics(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
 
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     revenues = db.query(Revenue).filter(
         Revenue.company_id == company_id
@@ -819,19 +1045,25 @@ def create_cyber_asset(
     provider: str = "unknown",
     technology_stack: str = "",
     notes: str = "",
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
 
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     asset = CyberAsset(
         company_id=company_id,
@@ -852,11 +1084,20 @@ def create_cyber_asset(
 @app.get("/api/cyber-assets/{company_id}")
 def get_cyber_assets(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     return db.query(CyberAsset).filter(
         CyberAsset.company_id == company_id
@@ -873,11 +1114,20 @@ def create_cyber_finding(
     description: str,
     recommendation: str,
     scan_id: int = 0,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     finding = CyberFinding(
         company_id=company_id,
@@ -900,11 +1150,20 @@ def create_cyber_finding(
 @app.get("/api/cyber-findings/{company_id}")
 def get_cyber_findings(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     return db.query(CyberFinding).filter(
         CyberFinding.company_id == company_id
@@ -921,11 +1180,20 @@ def create_cyber_threat(
     severity: str,
     score: float,
     cve_id: str = "",
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     threat = CyberThreat(
         company_id=company_id,
@@ -948,11 +1216,20 @@ def create_cyber_threat(
 @app.get("/api/cyber-threats/{company_id}")
 def get_cyber_threats(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     return db.query(CyberThreat).filter(
         CyberThreat.company_id == company_id
@@ -962,19 +1239,25 @@ def get_cyber_threats(
 @app.post("/api/cyber-ai/{company_id}")
 def cyber_ai(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
 
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     assets = db.query(CyberAsset).filter(
         CyberAsset.company_id == company_id
@@ -1051,11 +1334,20 @@ def cyber_ai(
 @app.get("/api/cyber-predictions/{company_id}")
 def cyber_predictions(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     return db.query(CyberPrediction).filter(
         CyberPrediction.company_id == company_id
@@ -1065,11 +1357,20 @@ def cyber_predictions(
 @app.get("/api/cyber-timeline/{company_id}")
 def cyber_timeline(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     return db.query(CyberScoreSnapshot).filter(
         CyberScoreSnapshot.company_id == company_id
@@ -1105,19 +1406,25 @@ def read_import_file(file_path: str, filename: str):
 async def import_revenues(
     company_id: int,
     file: UploadFile = File(...),
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
 
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
         return {"error": "Azienda non trovata"}
-
-    if current_user.role != "admin" and company.owner_id != current_user.id:
-        return {"error": "Non autorizzato"}
 
     temp_path = None
 
@@ -1240,11 +1547,20 @@ async def import_revenues(
 @app.get("/api/import/history/{company_id}")
 def import_history(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     return db.query(ImportJob).filter(
         ImportJob.company_id == company_id
@@ -1253,11 +1569,20 @@ def import_history(
 @app.get("/api/executive-dashboard/{company_id}")
 def executive_dashboard(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     company = db.query(Company).filter(
         Company.id == company_id
@@ -1335,11 +1660,20 @@ def executive_dashboard(
 @app.get("/api/daily-brief/{company_id}")
 def daily_brief(
     company_id: int,
+    x_tenant_id: int = Header(default=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if not current_user:
         return {"error": "Non autenticato"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
 
     company = db.query(Company).filter(Company.id == company_id).first()
 
@@ -1489,7 +1823,6 @@ def billing_me(
         "permissions": permissions
     }
 
-
 @app.get("/api/me/permissions")
 def my_permissions(
     db: Session = Depends(get_db),
@@ -1499,7 +1832,6 @@ def my_permissions(
         return {"error": "Non autenticato"}
 
     return get_user_permissions(db, current_user.id)
-
 
 @app.post("/api/billing/change-plan")
 def change_plan(
@@ -1592,14 +1924,8 @@ def billing_customer_portal(
         return {"error": "Nessun cliente Stripe collegato"}
 
     try:
-        session = StripeEngine.create_customer_portal(
-            subscription.provider_customer
-        )
-
-        return {
-            "portal_url": session.url
-        }
-
+        session = StripeEngine.create_customer_portal(subscription.provider_customer)
+        return {"portal_url": session.url}
     except Exception as e:
         return {"error": str(e)}
 
@@ -1649,7 +1975,6 @@ def create_tenant(
 
     return tenant
 
-
 @app.get("/api/tenants")
 def my_tenants(
     db: Session = Depends(get_db),
@@ -1665,7 +1990,6 @@ def my_tenants(
         tenants = [default_tenant]
 
     return tenants
-
 
 @app.get("/api/tenants/{tenant_id}/members")
 def tenant_members(
@@ -1707,7 +2031,6 @@ def tenant_companies(
         Company.id.in_(company_ids)
     ).all()
 
-
 @app.post("/api/tenant/companies")
 def create_tenant_company(
     name: str,
@@ -1743,7 +2066,6 @@ def create_tenant_company(
 
     return company
 
-
 @app.post("/api/tenant/link-company")
 def tenant_link_company(
     company_id: int,
@@ -1754,15 +2076,19 @@ def tenant_link_company(
     if not current_user:
         return {"error": "Non autenticato"}
 
+    if not x_tenant_id:
+        return {"error": "Tenant mancante"}
+
     if not user_can_access_tenant(db, current_user.id, x_tenant_id):
         return {"error": "Tenant non autorizzato"}
 
-    company = db.query(Company).filter(
-        Company.id == company_id
-    ).first()
+    company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
         return {"error": "Azienda non trovata"}
+
+    if current_user.role != "admin" and company.owner_id != current_user.id:
+        return {"error": "Non autorizzato"}
 
     link_company_to_tenant(db, x_tenant_id, company_id)
 
@@ -1794,3 +2120,4 @@ def check_tenant_company_access(
         "tenant_id": x_tenant_id,
         "allowed": allowed
     }
+
