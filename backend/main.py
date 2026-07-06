@@ -1,4 +1,5 @@
 import billing_models
+from openai_engine import openai_engine
 from tenant_security import user_can_access_company, tenant_company_error
 from tenant_models import Tenant, TenantMember, TenantCompany
 from tenant_engine import (
@@ -2121,3 +2122,79 @@ def check_tenant_company_access(
         "allowed": allowed
     }
 
+@app.post("/api/openai/company-advisor/{company_id}")
+def openai_company_advisor(
+    company_id: int,
+    question: str,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_has_permission(db, current_user.id, "openai"):
+        return {"error": "Modulo OpenAI disponibile dal piano BUSINESS"}
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id
+    ):
+        return tenant_company_error()
+
+    company = db.query(Company).filter(Company.id == company_id).first()
+
+    if not company:
+        return {"error": "Azienda non trovata"}
+
+    revenues = db.query(Revenue).filter(Revenue.company_id == company_id).all()
+    customers = db.query(Customer).filter(Customer.company_id == company_id).all()
+    compliance_items = db.query(ComplianceItem).filter(ComplianceItem.company_id == company_id).all()
+    cyber_assets = db.query(CyberAsset).filter(CyberAsset.company_id == company_id).all()
+    cyber_findings = db.query(CyberFinding).filter(CyberFinding.company_id == company_id).all()
+    cyber_threats = db.query(CyberThreat).filter(CyberThreat.company_id == company_id).all()
+
+    total_revenue = sum(r.amount for r in revenues)
+
+    system_prompt = """
+Sei Oracle Business AI Enterprise.
+Rispondi in italiano.
+Devi comportarti come un consulente aziendale senior.
+Usa solo i dati forniti.
+Se mancano dati, dichiaralo chiaramente.
+Fornisci sempre:
+1. Sintesi
+2. Rischi principali
+3. Azioni consigliate
+4. Priorità operative
+"""
+
+    user_prompt = f"""
+Azienda:
+- Nome: {company.name}
+- Settore: {company.sector}
+- Paese: {company.country}
+- Dominio: {company.domain}
+
+Finance:
+- Entrate totali: {total_revenue}
+- Numero operazioni: {len(revenues)}
+
+Customer:
+- Numero clienti: {len(customers)}
+
+Compliance:
+- Elementi compliance: {len(compliance_items)}
+
+Cyber:
+- Asset: {len(cyber_assets)}
+- Finding: {len(cyber_findings)}
+- Threat: {len(cyber_threats)}
+
+Domanda utente:
+{question}
+"""
+
+    return openai_engine.generate_business_answer(system_prompt, user_prompt)
