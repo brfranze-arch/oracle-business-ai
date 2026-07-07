@@ -11,6 +11,8 @@ function renderReports() {
             <button onclick="loadRevenueAnalyticsReport()">Revenue Analytics</button>
             <button onclick="runPredictiveAI()">Predictive AI</button>
             <button onclick="loadPredictiveHistory()">Storico Predictive</button>
+            <button onclick="runAutonomousAgents()">Autonomous Agents</button>
+            <button onclick="loadAgentsHistory()">Storico Agents</button>
 
             <div id="reportsResult"></div>
         </div>
@@ -240,5 +242,109 @@ async function loadPredictiveHistory() {
             }
         </div>
     `;
+}
+
+async function runAutonomousAgents() {
+
+    const companyId = getCompanyId();
+
+    document.getElementById("reportsResult").innerHTML = `
+        <div class="result">
+            Gli Autonomous Agents stanno analizzando l'azienda...
+        </div>
+    `;
+
+    const data = await apiPost(`/api/agents/run/${companyId}`);
+
+    if (data.error) {
+        showError("reportsResult", data.error);
+        return;
+    }
+
+    renderAgents(data);
+}
+
+async function loadAgentsHistory() {
+
+    const companyId = getCompanyId();
+
+    const data = await apiGet(`/api/agents/history/${companyId}`);
+
+    if (data.error) {
+        showError("reportsResult", data.error);
+        return;
+    }
+
+    renderAgents(data);
+}
+
+function renderAgents(list) {
+
+    const agents = safeArray(list);
+
+    document.getElementById("reportsResult").innerHTML = `
+        <div class="card">
+
+            <h2>🤖 Autonomous Agents</h2>
+
+            ${
+                agents.map(agent => `
+
+                    <div class="result">
+
+                        <span class="badge ${priorityBadge(agent.priority)}">
+
+                            ${safeValue(agent.priority)}
+
+                        </span>
+
+                        <h3>${safeValue(agent.agent_name)}</h3>
+
+                        <b>Status:</b>
+
+                        ${safeValue(agent.status)}
+
+                        <br><br>
+
+                        <b>Sintesi</b>
+
+                        <p>${safeValue(agent.summary)}</p>
+
+                        <b>Azioni consigliate</b>
+
+                        <p>${safeValue(agent.actions)}</p>
+
+                        <small>
+
+                            ${safeValue(agent.created_at)}
+
+                        </small>
+
+                    </div>
+
+                `).join("")
+            }
+
+        </div>
+    `;
+}
+
+function priorityBadge(priority){
+
+    switch((priority || "").toLowerCase()){
+
+        case "high":
+            return "badge-red";
+
+        case "medium":
+            return "badge-yellow";
+
+        case "low":
+            return "badge-green";
+
+        default:
+            return "badge-blue";
+    }
+
 }
 
