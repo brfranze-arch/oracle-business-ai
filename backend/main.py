@@ -1,4 +1,6 @@
 import billing_models
+from predictive_models import PredictiveInsight
+from predictive_engine import calculate_predictive_ai
 from osint_models import OsintScan, OsintFinding
 from osint_engine import analyze_domain_osint
 from tenant_security import user_can_access_company, tenant_company_error
@@ -2220,4 +2222,70 @@ def osint_findings(
     return db.query(OsintFinding).filter(
         OsintFinding.company_id == company_id
     ).order_by(OsintFinding.created_at.desc()).all()
+
+@app.post("/api/predictive/analyze/{company_id}")
+def predictive_analyze(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_has_permission(db, current_user.id, "predictive"):
+        return {"error": "Modulo Predictive AI disponibile dal piano BUSINESS"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    revenues = db.query(Revenue).filter(Revenue.company_id == company_id).all()
+    customers = db.query(Customer).filter(Customer.company_id == company_id).all()
+    compliance_items = db.query(ComplianceItem).filter(ComplianceItem.company_id == company_id).all()
+    cyber_predictions = db.query(CyberPrediction).filter(
+        CyberPrediction.company_id == company_id
+    ).order_by(CyberPrediction.created_at.desc()).all()
+
+    result = calculate_predictive_ai(
+        revenues,
+        customers,
+        compliance_items,
+        cyber_predictions
+    )
+
+    insight = PredictiveInsight(
+        company_id=company_id,
+        finance_risk=result["finance_risk"],
+        customer_risk=result["customer_risk"],
+        compliance_risk=result["compliance_risk"],
+        cyber_risk=result["cyber_risk"],
+        prediction_score=result["prediction_score"],
+        level=result["level"],
+        summary=result["summary"],
+        recommendation=result["recommendation"]
+    )
+
+    db.add(insight)
+    db.commit()
+    db.refresh(insight)
+
+    return insight
+
+
+@app.get("/api/predictive/history/{company_id}")
+def predictive_history(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    return db.query(PredictiveInsight).filter(
+        PredictiveInsight.company_id == company_id
+    ).order_by(PredictiveInsight.created_at.desc()).limit(100).all()
 

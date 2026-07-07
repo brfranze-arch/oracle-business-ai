@@ -4,6 +4,7 @@ import billing_models
 import tenant_models
 import openai_models
 import osint_models
+import predictive_models
 
 Base.metadata.create_all(bind=engine)
 
