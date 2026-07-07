@@ -10,6 +10,7 @@ function renderAssistant() {
 
             <button onclick="askAssistant()">Assistant Base</button>
             <button onclick="askOpenAIAdvisor()">OpenAI Enterprise Advisor</button>
+            <button onclick="loadOpenAIUsage()">Storico OpenAI</button>
             <button onclick="loadAssistantMemory()">Memoria AI</button>
 
             <div id="assistantResult"></div>
@@ -146,6 +147,44 @@ async function loadAssistantMemory() {
                         `;
                     }).join("")
                     : "<p>Nessuna memoria AI salvata.</p>"
+            }
+        </div>
+    `;
+}
+
+async function loadOpenAIUsage() {
+    const companyId = getCompanyId();
+
+    const data = await apiGet(`/api/openai/usage/${companyId}`);
+
+    if (data.error) {
+        showError("assistantResult", data.error);
+        return;
+    }
+
+    const logs = safeArray(data);
+
+    document.getElementById("assistantResult").innerHTML = `
+        <div class="card">
+            <h3>🧠 Storico OpenAI Enterprise</h3>
+
+            ${
+                logs.length > 0
+                    ? logs.map(log => `
+                        <div class="result">
+                            <span class="badge badge-blue">${safeValue(log.model)}</span>
+                            <br><br>
+
+                            <b>Domanda:</b>
+                            <p>${safeValue(log.question)}</p>
+
+                            <b>Risposta:</b>
+                            <pre style="white-space:pre-wrap;font-family:inherit;">${safeValue(log.answer)}</pre>
+
+                            <small>${safeValue(log.created_at)}</small>
+                        </div>
+                    `).join("")
+                    : "<p>Nessuna richiesta OpenAI ancora salvata.</p>"
             }
         </div>
     `;
