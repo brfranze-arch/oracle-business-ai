@@ -8,7 +8,8 @@ function renderAssistant() {
 
             <textarea id="assistantQuestion" placeholder="Esempio: Come sta andando la mia azienda? Qual è il mio rischio cyber? Cosa devo migliorare?"></textarea>
 
-            <button onclick="askAssistant()">Chiedi</button>
+            <button onclick="askAssistant()">Assistant Base</button>
+            <button onclick="askOpenAIAdvisor()">OpenAI Enterprise Advisor</button>
             <button onclick="loadAssistantMemory()">Memoria AI</button>
 
             <div id="assistantResult"></div>
@@ -62,6 +63,50 @@ async function askAssistant() {
                 <span class="badge ${badgeClass(level)}">${level}</span>
                 <div class="kpi-value">${score}/100</div>
                 ${progressBar(score)}
+            </div>
+        </div>
+    `;
+}
+
+async function askOpenAIAdvisor() {
+    const companyId = getCompanyId();
+    const question = document.getElementById("assistantQuestion").value || "";
+
+    if (!question.trim()) {
+        showError("assistantResult", "Scrivi una domanda.");
+        return;
+    }
+
+    const params = new URLSearchParams({ question });
+
+    document.getElementById("assistantResult").innerHTML = `
+        <div class="result">OpenAI Enterprise Advisor sta analizzando i dati aziendali...</div>
+    `;
+
+    const res = await fetch(`${API}/api/openai/company-advisor/${companyId}?${params}`, {
+        method: "POST",
+        headers: authHeaders()
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        showError("assistantResult", data.error);
+        return;
+    }
+
+    document.getElementById("assistantResult").innerHTML = `
+        <div class="card">
+            <h3>🧠 OpenAI Enterprise Advisor</h3>
+
+            <div class="result">
+                <b>Domanda:</b>
+                <p>${question}</p>
+            </div>
+
+            <div class="result">
+                <b>Risposta AI Enterprise:</b>
+                <pre style="white-space:pre-wrap;font-family:inherit;">${safeValue(data.answer)}</pre>
             </div>
         </div>
     `;
