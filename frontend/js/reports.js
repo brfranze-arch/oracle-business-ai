@@ -9,6 +9,8 @@ function renderReports() {
             <button onclick="loadOracleTimelineReport()">Oracle Timeline</button>
             <button onclick="loadCyberTimelineReport()">Cyber Timeline</button>
             <button onclick="loadRevenueAnalyticsReport()">Revenue Analytics</button>
+            <button onclick="runPredictiveAI()">Predictive AI</button>
+            <button onclick="loadPredictiveHistory()">Storico Predictive</button>
 
             <div id="reportsResult"></div>
         </div>
@@ -129,3 +131,114 @@ async function loadRevenueAnalyticsReport() {
         </div>
     `;
 }
+
+async function runPredictiveAI() {
+    const companyId = getCompanyId();
+
+    document.getElementById("reportsResult").innerHTML = `
+        <div class="result">
+            Predictive AI sta analizzando Finance, Customer, Compliance e Cyber...
+        </div>
+    `;
+
+    const data = await apiPost(`/api/predictive/analyze/${companyId}`);
+
+    if (data.error) {
+        showError("reportsResult", data.error);
+        return;
+    }
+
+    const score = safeNumber(data.prediction_score);
+    const level = safeValue(data.level, "STABILE");
+
+    document.getElementById("reportsResult").innerHTML = `
+        <div class="card">
+            <h3>🔮 Predictive AI</h3>
+
+            <span class="badge ${badgeClass(level)}">${level}</span>
+
+            <div class="kpi-value">${score}/100</div>
+            ${progressBar(score)}
+
+            <div class="kpi-grid">
+                <div class="kpi">
+                    <div class="kpi-title">Finance Risk</div>
+                    <div class="kpi-value">${safeNumber(data.finance_risk)}%</div>
+                    ${progressBar(safeNumber(data.finance_risk))}
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Customer Risk</div>
+                    <div class="kpi-value">${safeNumber(data.customer_risk)}%</div>
+                    ${progressBar(safeNumber(data.customer_risk))}
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Compliance Risk</div>
+                    <div class="kpi-value">${safeNumber(data.compliance_risk)}%</div>
+                    ${progressBar(safeNumber(data.compliance_risk))}
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Cyber Risk</div>
+                    <div class="kpi-value">${safeNumber(data.cyber_risk)}%</div>
+                    ${progressBar(safeNumber(data.cyber_risk))}
+                </div>
+            </div>
+
+            <div class="result">
+                <h3>Sintesi predittiva</h3>
+                <p>${safeValue(data.summary)}</p>
+            </div>
+
+            <div class="result">
+                <h3>Raccomandazione</h3>
+                <p>${safeValue(data.recommendation)}</p>
+            </div>
+        </div>
+    `;
+}
+
+async function loadPredictiveHistory() {
+    const companyId = getCompanyId();
+
+    const data = await apiGet(`/api/predictive/history/${companyId}`);
+
+    if (data.error) {
+        showError("reportsResult", data.error);
+        return;
+    }
+
+    const insights = safeArray(data);
+
+    document.getElementById("reportsResult").innerHTML = `
+        <div class="card">
+            <h3>🔮 Storico Predictive AI</h3>
+
+            ${
+                insights.length > 0
+                    ? insights.map(i => `
+                        <div class="result">
+                            <span class="badge ${badgeClass(i.level)}">${safeValue(i.level)}</span>
+                            <b>Prediction Score: ${safeNumber(i.prediction_score)}/100</b>
+                            ${progressBar(safeNumber(i.prediction_score))}
+
+                            Finance Risk: ${safeNumber(i.finance_risk)}%<br>
+                            Customer Risk: ${safeNumber(i.customer_risk)}%<br>
+                            Compliance Risk: ${safeNumber(i.compliance_risk)}%<br>
+                            Cyber Risk: ${safeNumber(i.cyber_risk)}%<br>
+                            Data: ${safeValue(i.created_at)}<br><br>
+
+                            <b>Sintesi:</b>
+                            <p>${safeValue(i.summary)}</p>
+
+                            <b>Raccomandazione:</b>
+                            <p>${safeValue(i.recommendation)}</p>
+                        </div>
+                    `).join("")
+                    : "<p>Nessuna analisi predittiva ancora presente.</p>"
+            }
+        </div>
+    `;
+}
+
