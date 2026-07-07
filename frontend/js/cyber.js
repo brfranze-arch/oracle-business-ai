@@ -23,6 +23,8 @@ function renderCyber() {
                     <button onclick="runCyberAI()">Esegui Cyber Oracle AI</button>
                     <button onclick="loadCyberPredictions()">Carica Predictions</button>
                     <button onclick="loadCyberTimeline()">Cyber Timeline</button>
+                    <button onclick="runOsintScan()">Esegui OSINT Scan</button>
+                    <button onclick="loadOsintResults()">Risultati OSINT</button>
                 </div>
             </div>
 
@@ -359,6 +361,149 @@ async function loadCyberTimeline() {
                         </div>
                     `).join("")
                     : "<p>Nessuna timeline cyber disponibile.</p>"
+            }
+        </div>
+    `;
+}
+
+async function runOsintScan() {
+    const companyId = getCompanyId();
+
+    document.getElementById("cyberResult").innerHTML = `
+        <div class="result">
+            OSINT scan in corso sul dominio aziendale...
+        </div>
+    `;
+
+    const data = await apiPost(`/api/osint/scan/${companyId}`);
+
+    if (data.error) {
+        showError("cyberResult", data.error);
+        return;
+    }
+
+    const scan = data.scan || {};
+    const findings = safeArray(data.findings);
+
+    document.getElementById("cyberResult").innerHTML = `
+        <div class="card">
+            <h3>🌐 OSINT Scan completato</h3>
+
+            <div class="kpi-grid">
+                <div class="kpi">
+                    <div class="kpi-title">Dominio</div>
+                    <div class="kpi-value" style="font-size:22px;">
+                        ${safeValue(scan.domain)}
+                    </div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Exposure Score</div>
+                    <div class="kpi-value">
+                        ${safeNumber(scan.exposure_score)}/100
+                    </div>
+                    ${progressBar(safeNumber(scan.exposure_score))}
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">DNS</div>
+                    <div class="kpi-value" style="font-size:22px;">
+                        ${safeValue(scan.dns_status)}
+                    </div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">SSL</div>
+                    <div class="kpi-value" style="font-size:22px;">
+                        ${safeValue(scan.ssl_status)}
+                    </div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h3>Sintesi</h3>
+                <p>${safeValue(scan.summary)}</p>
+            </div>
+
+            <div class="result">
+                <h3>Finding OSINT</h3>
+                ${
+                    findings.length > 0
+                        ? findings.map(f => `
+                            <div class="result">
+                                <span class="badge ${severityBadge(f.severity)}">
+                                    ${safeValue(f.severity)}
+                                </span>
+                                <b>${safeValue(f.title)}</b><br>
+                                Categoria: ${safeValue(f.category)}<br>
+                                Descrizione: ${safeValue(f.description)}<br>
+                                Raccomandazione: ${safeValue(f.recommendation)}
+                            </div>
+                        `).join("")
+                        : "<p>Nessun finding OSINT rilevato.</p>"
+                }
+            </div>
+        </div>
+    `;
+}
+
+async function loadOsintResults() {
+    const companyId = getCompanyId();
+
+    const scans = await apiGet(`/api/osint/scans/${companyId}`);
+    const findings = await apiGet(`/api/osint/findings/${companyId}`);
+
+    if (scans.error) {
+        showError("cyberResult", scans.error);
+        return;
+    }
+
+    if (findings.error) {
+        showError("cyberResult", findings.error);
+        return;
+    }
+
+    const scanList = safeArray(scans);
+    const findingList = safeArray(findings);
+
+    document.getElementById("cyberResult").innerHTML = `
+        <div class="card">
+            <h3>🌐 Storico OSINT</h3>
+
+            <h4>Scansioni</h4>
+            ${
+                scanList.length > 0
+                    ? scanList.map(s => `
+                        <div class="result">
+                            <span class="badge badge-blue">Scan #${safeValue(s.id)}</span>
+                            <b>${safeValue(s.domain)}</b><br>
+                            DNS: ${safeValue(s.dns_status)}<br>
+                            SSL: ${safeValue(s.ssl_status)}<br>
+                            HTTP: ${safeValue(s.http_status)}<br>
+                            Exposure Score: ${safeNumber(s.exposure_score)}/100
+                            ${progressBar(safeNumber(s.exposure_score))}
+                            Data: ${safeValue(s.created_at)}<br>
+                            <p>${safeValue(s.summary)}</p>
+                        </div>
+                    `).join("")
+                    : "<p>Nessuna scansione OSINT presente.</p>"
+            }
+
+            <h4>Finding</h4>
+            ${
+                findingList.length > 0
+                    ? findingList.map(f => `
+                        <div class="result">
+                            <span class="badge ${severityBadge(f.severity)}">
+                                ${safeValue(f.severity)}
+                            </span>
+                            <b>${safeValue(f.title)}</b><br>
+                            Categoria: ${safeValue(f.category)}<br>
+                            Descrizione: ${safeValue(f.description)}<br>
+                            Raccomandazione: ${safeValue(f.recommendation)}
+                        </div>
+                    `).join("")
+                    : "<p>Nessun finding OSINT presente.</p>"
             }
         </div>
     `;
