@@ -1,4 +1,6 @@
 import billing_models
+from osint_models import OsintScan, OsintFinding
+from osint_engine import analyze_domain_osint
 from tenant_security import user_can_access_company, tenant_company_error
 from tenant_models import Tenant, TenantMember, TenantCompany
 from tenant_engine import (
@@ -2123,4 +2125,99 @@ def check_tenant_company_access(
         "tenant_id": x_tenant_id,
         "allowed": allowed
     }
+
+@app.post("/api/osint/scan/{company_id}")
+def osint_scan(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_has_permission(db, current_user.id, "osint"):
+        return {"error": "Modulo OSINT disponibile dal piano BUSINESS"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    company = db.query(Company).filter(Company.id == company_id).first()
+
+    if not company:
+        return {"error": "Azienda non trovata"}
+
+    if not company.domain:
+        return {"error": "Dominio aziendale mancante"}
+
+    result = analyze_domain_osint(company.domain)
+
+    scan = OsintScan(
+        company_id=company_id,
+        domain=company.domain,
+        dns_status=result["dns_status"],
+        ssl_status=result["ssl_status"],
+        http_status=result["http_status"],
+        exposure_score=result["exposure_score"],
+        summary=result["summary"]
+    )
+
+    db.add(scan)
+    db.commit()
+    db.refresh(scan)
+
+    for f in result["findings"]:
+        finding = OsintFinding(
+            company_id=company_id,
+            scan_id=scan.id,
+            title=f["title"],
+            category=f["category"],
+            severity=f["severity"],
+            description=f["description"],
+            recommendation=f["recommendation"]
+        )
+        db.add(finding)
+
+    db.commit()
+
+    return {
+        "scan": scan,
+        "findings": result["findings"]
+    }
+
+
+@app.get("/api/osint/scans/{company_id}")
+def osint_scans(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    return db.query(OsintScan).filter(
+        OsintScan.company_id == company_id
+    ).order_by(OsintScan.created_at.desc()).all()
+
+
+@app.get("/api/osint/findings/{company_id}")
+def osint_findings(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    return db.query(OsintFinding).filter(
+        OsintFinding.company_id == company_id
+    ).order_by(OsintFinding.created_at.desc()).all()
 

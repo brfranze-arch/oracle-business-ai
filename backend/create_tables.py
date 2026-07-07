@@ -3,6 +3,7 @@ import models
 import billing_models
 import tenant_models
 import openai_models
+import osint_models
 
 Base.metadata.create_all(bind=engine)
 
