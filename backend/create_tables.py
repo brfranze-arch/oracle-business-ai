@@ -5,6 +5,7 @@ import tenant_models
 import openai_models
 import osint_models
 import predictive_models
+import agents_models
 
 Base.metadata.create_all(bind=engine)
 

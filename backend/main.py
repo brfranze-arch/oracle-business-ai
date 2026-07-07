@@ -1,4 +1,12 @@
 import billing_models
+from agents_models import AgentRun
+from agents_engine import (
+    run_finance_agent,
+    run_customer_agent,
+    run_compliance_agent,
+    run_cyber_agent,
+    run_executive_agent
+)
 from predictive_models import PredictiveInsight
 from predictive_engine import calculate_predictive_ai
 from osint_models import OsintScan, OsintFinding
@@ -2288,4 +2296,73 @@ def predictive_history(
     return db.query(PredictiveInsight).filter(
         PredictiveInsight.company_id == company_id
     ).order_by(PredictiveInsight.created_at.desc()).limit(100).all()
+
+@app.post("/api/agents/run/{company_id}")
+def run_agents(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_has_permission(db, current_user.id, "agents"):
+        return {"error": "Autonomous Agents disponibili dal piano ENTERPRISE"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    revenues = db.query(Revenue).filter(Revenue.company_id == company_id).all()
+    customers = db.query(Customer).filter(Customer.company_id == company_id).all()
+    compliance_items = db.query(ComplianceItem).filter(ComplianceItem.company_id == company_id).all()
+    cyber_findings = db.query(CyberFinding).filter(CyberFinding.company_id == company_id).all()
+    cyber_threats = db.query(CyberThreat).filter(CyberThreat.company_id == company_id).all()
+
+    results = [
+        ("Finance Agent", run_finance_agent(revenues)),
+        ("Customer Agent", run_customer_agent(customers)),
+        ("Compliance Agent", run_compliance_agent(compliance_items)),
+        ("Cyber Agent", run_cyber_agent(cyber_findings, cyber_threats)),
+    ]
+
+    executive = run_executive_agent([r[1] for r in results])
+    results.append(("Executive Agent", executive))
+
+    saved = []
+
+    for name, result in results:
+        run = AgentRun(
+            company_id=company_id,
+            agent_name=name,
+            status="completed",
+            summary=result["summary"],
+            actions=result["actions"],
+            priority=result["priority"]
+        )
+
+        db.add(run)
+        db.commit()
+        db.refresh(run)
+        saved.append(run)
+
+    return saved
+
+
+@app.get("/api/agents/history/{company_id}")
+def agents_history(
+    company_id: int,
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_can_access_company(db, current_user.id, x_tenant_id, company_id):
+        return tenant_company_error()
+
+    return db.query(AgentRun).filter(
+        AgentRun.company_id == company_id
+    ).order_by(AgentRun.created_at.desc()).limit(100).all()
 
