@@ -31,6 +31,7 @@ from billing_engine import (
 )
 from billing_webhook import process_stripe_event
 from routers.openai_router import router as openai_router
+from routers.digital_twin_router import router as digital_twin_router
 from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
@@ -93,6 +94,7 @@ app.add_middleware(
 )
 
 app.include_router(openai_router)
+app.include_router(digital_twin_router)
 
 
 def get_db():

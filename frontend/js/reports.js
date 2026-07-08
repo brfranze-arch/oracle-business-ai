@@ -13,6 +13,8 @@ function renderReports() {
             <button onclick="loadPredictiveHistory()">Storico Predictive</button>
             <button onclick="runAutonomousAgents()">Autonomous Agents</button>
             <button onclick="loadAgentsHistory()">Storico Agents</button>
+            <button onclick="runDigitalTwin()">Digital Twin</button>
+            <button onclick="loadDigitalTwinHistory()">Storico Digital Twin</button>
 
             <div id="reportsResult"></div>
         </div>
