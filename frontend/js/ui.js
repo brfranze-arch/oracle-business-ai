@@ -57,6 +57,7 @@ if (protectedPages.includes(page)) {
     else if (page === "import") renderImport();
     else if (page === "reports") renderReports();
     else if (page === "billing") renderBilling();
+    else if (page === "release") renderRelease();
     else if (page === "settings") renderSettings();
 }
 
