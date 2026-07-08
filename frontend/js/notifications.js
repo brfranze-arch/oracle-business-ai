@@ -1,27 +1,29 @@
 function buildNotifications(data) {
     const notifications = [];
 
-    if (data.oracle_score < 65) {
+    if (!data) {
+        return [{ type: "info", icon: "ℹ️", text: "Notification Center in attesa dati." }];
+    }
+
+    if (Number(data.oracle_score || 0) < 65) {
         notifications.push({ type: "warning", icon: "⚠️", text: "Oracle Score sotto la soglia FORTE." });
     }
 
-    if (data.attack_probability_30d > 25) {
+    if (Number(data.attack_probability_30d || 0) > 25) {
         notifications.push({ type: "danger", icon: "🛡", text: `Rischio cyber 30 giorni: ${data.attack_probability_30d}%.` });
     }
 
-    if (data.risks && data.risks.length > 0) {
+    if (Array.isArray(data.risks) && data.risks.length > 0) {
         notifications.push({ type: "warning", icon: "🚨", text: `${data.risks.length} rischi aziendali rilevati.` });
     }
 
-    if (data.suggestions && data.suggestions.length > 0) {
+    if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
         notifications.push({ type: "info", icon: "🤖", text: `${data.suggestions.length} azioni AI consigliate.` });
     }
 
-    if (notifications.length === 0) {
-        notifications.push({ type: "success", icon: "✅", text: "Nessuna criticità importante rilevata." });
-    }
+    notifications.push({ type: "success", icon: "🟢", text: "Billing, Workspace e AI Engine operativi." });
 
-    return notifications;
+    return notifications.slice(0, 8);
 }
 
 function renderNotificationCenter(notifications) {
@@ -33,18 +35,12 @@ function renderNotificationCenter(notifications) {
     const list = Array.isArray(notifications) ? notifications : [];
     count.innerText = list.length;
 
-    box.innerHTML = `
-        <div class="notification-header-v2">
-            <strong>Oracle Notifications</strong>
-            <small>${new Date().toLocaleString("it-IT")}</small>
+    box.innerHTML = list.map(n => `
+        <div class="notification-item ${n.type}">
+            <span>${n.icon}</span>
+            <p>${n.text}</p>
         </div>
-        ${list.map(n => `
-            <div class="notification-item ${n.type}">
-                <span>${n.icon}</span>
-                <p>${n.text}</p>
-            </div>
-        `).join("")}
-    `;
+    `).join("");
 }
 
 function toggleNotifications() {
