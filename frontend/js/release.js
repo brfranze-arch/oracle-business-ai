@@ -9,6 +9,7 @@ function renderRelease() {
             <button onclick="loadReleaseStatus()">Carica stato release</button>
             <button onclick="exportReleaseSnapshot()">Esporta snapshot RC1</button>
             <button onclick="exportTestChecklist()">Esporta checklist test</button>
+            <button onclick="exportReleaseAudit()">Esporta audit log</button>
 
             <div id="releaseResult"></div>
         </div>
@@ -18,6 +19,7 @@ function renderRelease() {
 }
 
 async function loadReleaseStatus() {
+    addReleaseAudit("Viewed RC1 Release Center");
     const billing = await apiGet("/api/billing/me");
     const permissions = await apiGet("/api/me/permissions");
     const tenants = await apiGet("/api/tenants");
@@ -187,3 +189,36 @@ ORACLE BUSINESS AI - RC1 TEST CHECKLIST
 
     URL.revokeObjectURL(url);
 }
+
+function addReleaseAudit(action) {
+    const logs = JSON.parse(localStorage.getItem("oracle_release_audit") || "[]");
+
+    logs.unshift({
+        action: action,
+        date: new Date().toISOString(),
+        user: localStorage.getItem("oracle_user") || "unknown"
+    });
+
+    localStorage.setItem("oracle_release_audit", JSON.stringify(logs.slice(0, 100)));
+}
+
+function exportReleaseAudit() {
+    addReleaseAudit("Export audit log");
+
+    const logs = JSON.parse(localStorage.getItem("oracle_release_audit") || "[]");
+
+    const blob = new Blob(
+        [JSON.stringify(logs, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "oracle_business_ai_rc1_audit_log.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
