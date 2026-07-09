@@ -8,6 +8,7 @@ function renderRelease() {
 
             <button onclick="loadReleaseStatus()">Carica stato release</button>
             <button onclick="exportReleaseSnapshot()">Esporta snapshot RC1</button>
+            <button onclick="exportTestChecklist()">Esporta checklist test</button>
 
             <div id="releaseResult"></div>
         </div>
@@ -142,3 +143,47 @@ function exportReleaseSnapshot() {
     URL.revokeObjectURL(url);
 }
 
+function exportTestChecklist() {
+    const checklist = `
+ORACLE BUSINESS AI - RC1 TEST CHECKLIST
+
+[ ] Login
+[ ] Logout
+[ ] Registrazione nuovo utente
+[ ] Billing - piano attuale
+[ ] Billing - Stripe Checkout
+[ ] Billing - Customer Portal
+[ ] Billing - Fatture
+[ ] Multi Tenant - selezione workspace
+[ ] Settings - crea azienda nel tenant
+[ ] Dashboard
+[ ] Finance
+[ ] Customer
+[ ] Compliance
+[ ] Cyber
+[ ] OSINT
+[ ] Assistant Base
+[ ] OpenAI Enterprise Advisor
+[ ] Reports
+[ ] Predictive AI
+[ ] Autonomous Agents
+[ ] Digital Twin
+[ ] Import CSV/Excel
+[ ] Release Center
+[ ] Test permessi FREE
+[ ] Test permessi BUSINESS
+[ ] Test permessi ENTERPRISE
+[ ] Deploy Render backend
+[ ] Deploy Render frontend
+`;
+
+    const blob = new Blob([checklist], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "oracle_business_ai_rc1_test_checklist.txt";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
