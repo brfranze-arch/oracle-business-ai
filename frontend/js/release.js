@@ -73,6 +73,24 @@ async function loadReleaseStatus() {
                 <p>✅ Autonomous Agents</p>
                 <p>✅ Digital Twin</p>
             </div>
+
+<div class="result">
+    <h3>📌 Release Notes RC1</h3>
+    <p><b>Versione:</b> Oracle Business AI RC1</p>
+    <p><b>Stato:</b> Release Candidate stabile</p>
+    <p><b>Moduli inclusi:</b> Billing, Multi Tenant, OpenAI, OSINT, Predictive AI, Autonomous Agents, Digital Twin.</p>
+    <p><b>Deploy:</b> Render + PostgreSQL + Stripe + OpenAI API.</p>
+    <p><b>Obiettivo:</b> versione pronta per demo, test clienti e validazione commerciale.</p>
+</div>
+
+<div class="result">
+    <h3>🎯 Prossime azioni consigliate</h3>
+    <p>1. Test completo con account FREE, BUSINESS ed ENTERPRISE.</p>
+    <p>2. Verifica Stripe Customer Portal.</p>
+    <p>3. Verifica permessi modulo per piano.</p>
+    <p>4. Test OpenAI con budget limitato.</p>
+    <p>5. Preparazione demo commerciale.</p>
+</div>
         </div>
     `;
 }
