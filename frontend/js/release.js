@@ -23,10 +23,45 @@ async function loadReleaseStatus() {
     const billing = await apiGet("/api/billing/me");
     const permissions = await apiGet("/api/me/permissions");
     const tenants = await apiGet("/api/tenants");
+    const backendHealth = await apiGet("/");
+    const healthScore = calculatePlatformHealth(billing, permissions, tenants, backendHealth);
 
     document.getElementById("releaseResult").innerHTML = `
         <div class="card">
             <h3>✅ Stato RC1</h3>
+            <div class="result">
+    <h3>🟢 Enterprise Health Center</h3>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-title">Backend</div>
+            <div class="kpi-value">${backendHealth.status === "online" ? "ONLINE" : "CHECK"}</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Frontend</div>
+            <div class="kpi-value">ONLINE</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Billing</div>
+            <div class="kpi-value">${safeValue(billing.plan)}</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Health Score</div>
+            <div class="kpi-value">${healthScore}/100</div>
+            ${progressBar(healthScore)}
+        </div>
+    </div>
+
+    <p>
+        Stato generale piattaforma:
+        <span class="badge ${healthScore >= 80 ? "badge-green" : healthScore >= 60 ? "badge-yellow" : "badge-red"}">
+            ${healthScore >= 80 ? "OPERATIVA" : healthScore >= 60 ? "ATTENZIONE" : "CRITICA"}
+        </span>
+    </p>
+</div>
 
             <div class="kpi-grid">
                 <div class="kpi">
@@ -220,5 +255,19 @@ function exportReleaseAudit() {
     a.click();
 
     URL.revokeObjectURL(url);
+}
+
+function calculatePlatformHealth(billing, permissions, tenants, backendHealth) {
+    let score = 0;
+
+    if (backendHealth && backendHealth.status === "online") score += 20;
+    if (billing && billing.plan) score += 20;
+    if (permissions && permissions.finance) score += 15;
+    if (permissions && permissions.customer) score += 15;
+    if (permissions && permissions.compliance) score += 10;
+    if (permissions && permissions.openai) score += 10;
+    if (safeArray(tenants).length > 0) score += 10;
+
+    return Math.min(100, score);
 }
 
