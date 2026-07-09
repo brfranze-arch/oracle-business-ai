@@ -7,6 +7,7 @@ function renderRelease() {
             <p>Centro controllo release, stato moduli e checklist finale Enterprise.</p>
 
             <button onclick="loadReleaseStatus()">Carica stato release</button>
+            <button onclick="exportReleaseSnapshot()">Esporta snapshot RC1</button>
 
             <div id="releaseResult"></div>
         </div>
@@ -83,3 +84,43 @@ function releaseBadge(label, active) {
         </span>
     `;
 }
+
+function exportReleaseSnapshot() {
+    const snapshot = {
+        product: "Oracle Business AI",
+        version: "RC1",
+        date: new Date().toISOString(),
+        status: "READY",
+        modules: {
+            auth: true,
+            billing: true,
+            stripe: true,
+            multiTenant: true,
+            dashboard: true,
+            finance: true,
+            customer: true,
+            compliance: true,
+            cyber: true,
+            osint: true,
+            openai: true,
+            predictive: true,
+            agents: true,
+            digitalTwin: true
+        }
+    };
+
+    const blob = new Blob(
+        [JSON.stringify(snapshot, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "oracle_business_ai_rc1_snapshot.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
