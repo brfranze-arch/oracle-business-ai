@@ -25,6 +25,7 @@ async function loadReleaseStatus() {
     const tenants = await apiGet("/api/tenants");
     const backendHealth = await apiGet("/");
     const healthScore = calculatePlatformHealth(billing, permissions, tenants, backendHealth);
+    const finalStatus = getRC1FinalStatus(healthScore);
 
     document.getElementById("releaseResult").innerHTML = `
         <div class="card">
@@ -55,6 +56,26 @@ async function loadReleaseStatus() {
         </div>
     </div>
 
+    <div class="result">
+    <h3>🚀 RC1 Final Status</h3>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-title">Release Status</div>
+            <div class="kpi-value">${finalStatus.label}</div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Deploy Readiness</div>
+            <div class="kpi-value">${finalStatus.readiness}%</div>
+            ${progressBar(finalStatus.readiness)}
+        </div>
+    </div>
+
+    <span class="badge ${finalStatus.badge}">
+        ${finalStatus.message}
+    </span>
+</div>
     <p>
         Stato generale piattaforma:
         <span class="badge ${healthScore >= 80 ? "badge-green" : healthScore >= 60 ? "badge-yellow" : "badge-red"}">
@@ -269,5 +290,32 @@ function calculatePlatformHealth(billing, permissions, tenants, backendHealth) {
     if (safeArray(tenants).length > 0) score += 10;
 
     return Math.min(100, score);
+}
+
+function getRC1FinalStatus(healthScore) {
+    if (healthScore >= 85) {
+        return {
+            label: "READY",
+            readiness: 100,
+            badge: "badge-green",
+            message: "Oracle Business AI RC1 è pronta per demo e validazione clienti."
+        };
+    }
+
+    if (healthScore >= 65) {
+        return {
+            label: "WARNING",
+            readiness: 75,
+            badge: "badge-yellow",
+            message: "RC1 operativa, ma alcune aree richiedono verifica."
+        };
+    }
+
+    return {
+        label: "BLOCKED",
+        readiness: 40,
+        badge: "badge-red",
+        message: "RC1 non pronta: verificare backend, billing, permessi e tenant."
+    };
 }
 
