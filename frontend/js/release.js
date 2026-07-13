@@ -12,6 +12,7 @@ function renderRelease() {
             <button onclick="exportReleaseAudit()">Esporta audit log</button>
             <button onclick="runRC1Diagnostics()">Esegui diagnostica moduli</button>
             <button onclick="exportRC1Diagnostics()">Esporta diagnostica</button>
+            <button onclick="exportReleaseManifest()">Esporta manifest RC1</button>	
 
             <div id="releaseResult"></div>
         </div>
@@ -28,6 +29,7 @@ async function loadReleaseStatus() {
     const backendHealth = await apiGet("/");
     const healthScore = calculatePlatformHealth(billing, permissions, tenants, backendHealth);
     const finalStatus = getRC1FinalStatus(healthScore);
+    const manifest = getReleaseManifest();
 
     document.getElementById("releaseResult").innerHTML = `
         <div class="card">
@@ -134,6 +136,49 @@ async function loadReleaseStatus() {
                 <p>✅ Autonomous Agents</p>
                 <p>✅ Digital Twin</p>
             </div>
+
+<div class="result">
+    <h3>📦 Version & Build Information</h3>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-title">Versione</div>
+            <div class="kpi-value" style="font-size:24px;">
+                ${safeValue(manifest.version)}
+            </div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Canale</div>
+            <div class="kpi-value" style="font-size:22px;">
+                ${safeValue(manifest.channel)}
+            </div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Ambiente</div>
+            <div class="kpi-value" style="font-size:22px;">
+                ${window.location.hostname.includes("127.0.0.1") ||
+                  window.location.hostname.includes("localhost")
+                    ? "LOCAL"
+                    : "CLOUD"}
+            </div>
+        </div>
+
+        <div class="kpi">
+            <div class="kpi-title">Connessione</div>
+            <div class="kpi-value" style="font-size:22px;">
+                ${manifest.online ? "ONLINE" : "OFFLINE"}
+            </div>
+        </div>
+    </div>
+
+    <p><b>Frontend:</b> ${safeValue(manifest.frontend)}</p>
+    <p><b>Backend:</b> ${safeValue(manifest.backend)}</p>
+    <p><b>Database:</b> ${safeValue(manifest.database)}</p>
+    <p><b>Deploy:</b> ${safeValue(manifest.deployment)}</p>
+    <p><b>API URL:</b> ${safeValue(manifest.api_url)}</p>
+</div>
 
 <div class="result">
     <h3>📌 Release Notes RC1</h3>
@@ -527,6 +572,52 @@ function exportRC1Diagnostics() {
     a.href = url;
     a.download = "oracle_business_ai_rc1_diagnostics.json";
     a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+const ORACLE_RELEASE_INFO = {
+    product: "Oracle Business AI",
+    version: "1.0.0-RC1",
+    channel: "release-candidate",
+    frontend: "Enterprise Web",
+    backend: "FastAPI",
+    database: "PostgreSQL",
+    deployment: "Render",
+    billing: "Stripe",
+    ai_provider: "OpenAI"
+};
+
+function getReleaseManifest() {
+    return {
+        ...ORACLE_RELEASE_INFO,
+        generated_at: new Date().toISOString(),
+        frontend_url: window.location.origin,
+        api_url: API,
+        tenant_id: getTenantId(),
+        company_id: getCompanyId(),
+        browser: navigator.userAgent,
+        language: navigator.language,
+        online: navigator.onLine
+    };
+}
+
+function exportReleaseManifest() {
+    addReleaseAudit("Exported RC1 release manifest");
+
+    const manifest = getReleaseManifest();
+
+    const blob = new Blob(
+        [JSON.stringify(manifest, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "oracle_business_ai_rc1_manifest.json";
+    link.click();
 
     URL.revokeObjectURL(url);
 }
