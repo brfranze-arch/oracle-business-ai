@@ -10,6 +10,8 @@ function renderRelease() {
             <button onclick="exportReleaseSnapshot()">Esporta snapshot RC1</button>
             <button onclick="exportTestChecklist()">Esporta checklist test</button>
             <button onclick="exportReleaseAudit()">Esporta audit log</button>
+            <button onclick="runRC1Diagnostics()">Esegui diagnostica moduli</button>
+            <button onclick="exportRC1Diagnostics()">Esporta diagnostica</button>
 
             <div id="releaseResult"></div>
         </div>
@@ -319,3 +321,212 @@ function getRC1FinalStatus(healthScore) {
     };
 }
 
+let rc1DiagnosticsCache = [];
+
+async function runRC1Diagnostics() {
+    const companyId = getCompanyId();
+
+    const tests = [
+        {
+            name: "Backend",
+            request: () => apiGet("/")
+        },
+        {
+            name: "Billing",
+            request: () => apiGet("/api/billing/me")
+        },
+        {
+            name: "Permessi",
+            request: () => apiGet("/api/me/permissions")
+        },
+        {
+            name: "Tenant",
+            request: () => apiGet("/api/tenants")
+        },
+        {
+            name: "Aziende Workspace",
+            request: () => apiGet("/api/tenant/companies")
+        },
+        {
+            name: "Dashboard",
+            request: () => apiGet(`/api/executive-dashboard/${companyId}`)
+        },
+        {
+            name: "Finance",
+            request: () => apiGet(`/api/finance-summary/${companyId}`)
+        },
+        {
+            name: "Customer",
+            request: () => apiGet(`/api/customers/${companyId}`)
+        },
+        {
+            name: "Compliance",
+            request: () => apiGet(`/api/compliance-items/${companyId}`)
+        },
+        {
+            name: "Cyber",
+            request: () => apiGet(`/api/cyber-assets/${companyId}`)
+        },
+        {
+            name: "Reports",
+            request: () => apiGet(`/api/oracle-timeline/${companyId}`)
+        },
+        {
+            name: "OpenAI Usage",
+            request: () => apiGet(`/api/openai/usage/${companyId}`)
+        },
+        {
+            name: "Predictive",
+            request: () => apiGet(`/api/predictive/history/${companyId}`)
+        },
+        {
+            name: "Agents",
+            request: () => apiGet(`/api/agents/history/${companyId}`)
+        }
+    ];
+
+    document.getElementById("releaseResult").innerHTML = `
+        <div class="card">
+            <h2>🧪 Diagnostica RC1</h2>
+            <div class="result">
+                Verifica moduli in corso...
+            </div>
+        </div>
+    `;
+
+    const results = [];
+
+    for (const test of tests) {
+        try {
+            const startedAt = performance.now();
+            const response = await test.request();
+            const elapsed = Math.round(performance.now() - startedAt);
+
+            const errorMessage = response && response.error
+                ? response.error
+                : null;
+
+            results.push({
+                module: test.name,
+                status: errorMessage ? "warning" : "ok",
+                message: errorMessage || "Modulo raggiungibile",
+                response_time_ms: elapsed
+            });
+        } catch (error) {
+            results.push({
+                module: test.name,
+                status: "error",
+                message: error.message || "Errore di connessione",
+                response_time_ms: 0
+            });
+        }
+    }
+
+    rc1DiagnosticsCache = results;
+
+    addReleaseAudit("Executed RC1 diagnostics");
+
+    renderRC1Diagnostics(results);
+}
+
+function renderRC1Diagnostics(results) {
+    const okCount = results.filter(item => item.status === "ok").length;
+    const warningCount = results.filter(item => item.status === "warning").length;
+    const errorCount = results.filter(item => item.status === "error").length;
+
+    const score = Math.round((okCount / results.length) * 100);
+
+    document.getElementById("releaseResult").innerHTML = `
+        <div class="card">
+            <h2>🧪 Diagnostica RC1</h2>
+
+            <div class="kpi-grid">
+                <div class="kpi">
+                    <div class="kpi-title">Moduli OK</div>
+                    <div class="kpi-value">${okCount}</div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Warning</div>
+                    <div class="kpi-value">${warningCount}</div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Errori</div>
+                    <div class="kpi-value">${errorCount}</div>
+                </div>
+
+                <div class="kpi">
+                    <div class="kpi-title">Diagnostic Score</div>
+                    <div class="kpi-value">${score}/100</div>
+                    ${progressBar(score)}
+                </div>
+            </div>
+
+            ${
+                results.map(item => `
+                    <div class="result">
+                        <span class="badge ${
+                            item.status === "ok"
+                                ? "badge-green"
+                                : item.status === "warning"
+                                    ? "badge-yellow"
+                                    : "badge-red"
+                        }">
+                            ${
+                                item.status === "ok"
+                                    ? "OK"
+                                    : item.status === "warning"
+                                        ? "WARNING"
+                                        : "ERROR"
+                            }
+                        </span>
+
+                        <b>${safeValue(item.module)}</b><br>
+                        Messaggio: ${safeValue(item.message)}<br>
+                        Tempo risposta: ${safeNumber(item.response_time_ms)} ms
+                    </div>
+                `).join("")
+            }
+
+            <button onclick="loadReleaseStatus()">
+                Torna allo stato RC1
+            </button>
+        </div>
+    `;
+}
+
+function exportRC1Diagnostics() {
+    if (!rc1DiagnosticsCache.length) {
+        showError(
+            "releaseResult",
+            "Esegui prima la diagnostica dei moduli."
+        );
+        return;
+    }
+
+    addReleaseAudit("Exported RC1 diagnostics");
+
+    const report = {
+        product: "Oracle Business AI",
+        version: "RC1",
+        generated_at: new Date().toISOString(),
+        tenant_id: getTenantId(),
+        company_id: getCompanyId(),
+        results: rc1DiagnosticsCache
+    };
+
+    const blob = new Blob(
+        [JSON.stringify(report, null, 2)],
+        { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "oracle_business_ai_rc1_diagnostics.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
