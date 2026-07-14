@@ -1,4 +1,5 @@
 import billing_models
+from enterprise_import_engine import import_enterprise_workbook
 from agents_models import AgentRun
 from agents_engine import (
     run_finance_agent,
@@ -2367,4 +2368,78 @@ def agents_history(
     return db.query(AgentRun).filter(
         AgentRun.company_id == company_id
     ).order_by(AgentRun.created_at.desc()).limit(100).all()
+
+@app.post("/api/import/enterprise/{company_id}")
+async def import_enterprise_excel(
+    company_id: int,
+    file: UploadFile = File(...),
+    x_tenant_id: int = Header(default=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user:
+        return {"error": "Non autenticato"}
+
+    if not user_has_permission(
+        db,
+        current_user.id,
+        "import_data",
+    ):
+        return {
+            "error": (
+                "Import Enterprise disponibile dal piano "
+                "PROFESSIONAL"
+            )
+        }
+
+    if not user_can_access_company(
+        db,
+        current_user.id,
+        x_tenant_id,
+        company_id,
+    ):
+        return tenant_company_error()
+
+    if not file.filename:
+        return {"error": "Nome file mancante"}
+
+    if not file.filename.lower().endswith((".xlsx", ".xls")):
+        return {
+            "error": "Seleziona un file Excel .xlsx o .xls"
+        }
+
+    temp_path = None
+
+    try:
+        suffix = os.path.splitext(file.filename)[1]
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=suffix,
+        ) as temporary_file:
+            temporary_file.write(await file.read())
+            temp_path = temporary_file.name
+
+        result = import_enterprise_workbook(
+            db=db,
+            company_id=company_id,
+            file_path=temp_path,
+            filename=file.filename,
+        )
+
+        return {
+            "message": "Import Enterprise completato",
+            **result,
+        }
+
+    except Exception as exc:
+        db.rollback()
+
+        return {
+            "error": f"Import Enterprise fallito: {str(exc)}"
+        }
+
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
 
