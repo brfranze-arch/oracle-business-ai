@@ -8,6 +8,7 @@ import digital_twin_models
 import osint_models
 import predictive_models
 import agents_models
+import portal_models
 
 Base.metadata.create_all(bind=engine)
 
