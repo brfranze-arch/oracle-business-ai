@@ -1,0 +1,11 @@
+ORIZZONTE360 - CHECKLIST ENTERPRISE
+
+[ ] Database PostgreSQL dedicato
+[ ] Variabili ambiente configurate
+[ ] Backup iniziale
+[ ] HTTPS e dominio
+[ ] Stripe/OpenAI configurati se richiesti
+[ ] Utente amministratore creato
+[ ] Test import e moduli
+[ ] Test restore
+[ ] Verbale di consegna

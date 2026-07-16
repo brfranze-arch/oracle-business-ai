@@ -1,4 +1,5 @@
 import billing_models
+import portal_license_models
 from enterprise_import_engine import import_enterprise_workbook
 from agents_models import AgentRun
 from agents_engine import (
@@ -34,6 +35,7 @@ from billing_webhook import process_stripe_event
 from routers.openai_router import router as openai_router
 from routers.digital_twin_router import router as digital_twin_router
 from routers.portal_router import router as portal_router
+from portal_seed import seed_portal_catalog
 from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
@@ -82,6 +84,7 @@ Base.metadata.create_all(bind=engine)
 
 with SessionLocal() as db:
     seed_default_plans(db)
+    seed_portal_catalog(db)
 
 app = FastAPI(title="Oracle Business AI")
 

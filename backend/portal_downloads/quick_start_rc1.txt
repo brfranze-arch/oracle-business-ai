@@ -1,0 +1,9 @@
+ORIZZONTE360 - GUIDA RAPIDA RC1
+
+1. Accedi con il tuo account.
+2. Seleziona il tenant corretto.
+3. Seleziona o crea l'azienda.
+4. Importa il dataset Enterprise.
+5. Controlla Dashboard, Finance, Customer e Compliance.
+6. Esegui OSINT, Predictive AI, Autonomous Agents e Digital Twin.
+7. Usa Release Center prima di una demo o di un deploy.
