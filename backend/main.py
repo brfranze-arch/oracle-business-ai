@@ -1,5 +1,6 @@
 import billing_models
 import portal_license_models
+import portal_ticket_models
 from enterprise_import_engine import import_enterprise_workbook
 from agents_models import AgentRun
 from agents_engine import (
@@ -35,6 +36,7 @@ from billing_webhook import process_stripe_event
 from routers.openai_router import router as openai_router
 from routers.digital_twin_router import router as digital_twin_router
 from routers.portal_router import router as portal_router
+from routers.portal_ticket_router import router as portal_ticket_router
 from portal_seed import seed_portal_catalog
 from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -101,6 +103,7 @@ app.add_middleware(
 app.include_router(openai_router)
 app.include_router(digital_twin_router)
 app.include_router(portal_router)
+app.include_router(portal_ticket_router)
 
 
 def get_db():

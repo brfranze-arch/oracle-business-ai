@@ -10,6 +10,7 @@ import predictive_models
 import agents_models
 import portal_models
 import portal_license_models
+import portal_ticket_models
 
 Base.metadata.create_all(bind=engine)
 

@@ -4,3 +4,23 @@ backend/*.db
 backend/.env
 *.pyc
 .DS_Store
+# Python environments
+venv/
+.venv/
+backend/.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment and secrets
+.env
+*.env.local
+
+# Portal ticket uploads
+backend/portal_ticket_uploads/*
+!backend/portal_ticket_uploads/.gitkeep
+
+# Logs and temporary files
+*.log
+*.tmp
