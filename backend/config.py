@@ -23,6 +23,11 @@ class Settings:
 
     STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
+    CUSTOMER_PORTAL_URL = os.getenv(
+        "CUSTOMER_PORTAL_URL",
+        "http://127.0.0.1:5600"
+    )
+
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.5")
 

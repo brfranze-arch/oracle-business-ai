@@ -19,11 +19,13 @@ class StripeEngine:
         return mapping.get(plan)
 
     @staticmethod
-    def create_checkout_session(user, plan: str):
+    def create_checkout_session(user, plan: str, return_url: str | None = None):
         price_id = StripeEngine.get_price_id(plan)
 
         if not price_id:
             raise ValueError("Price ID non configurato per questo piano.")
+
+        portal_url = (return_url or settings.CUSTOMER_PORTAL_URL).rstrip("/")
 
         session = stripe.checkout.Session.create(
             mode="subscription",
@@ -35,8 +37,8 @@ class StripeEngine:
                     "quantity": 1,
                 }
             ],
-            success_url=f"{settings.FRONTEND_URL}?billing=success",
-            cancel_url=f"{settings.FRONTEND_URL}?billing=cancel",
+            success_url=f"{portal_url}?billing=success&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{portal_url}?billing=cancel",
             metadata={
                 "user_id": str(user.id),
                 "plan": plan.upper(),
@@ -55,7 +57,7 @@ class StripeEngine:
     def create_customer_portal(customer_id: str):
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url=settings.FRONTEND_URL,
+            return_url=f"{settings.CUSTOMER_PORTAL_URL}?billing=return",
         )
 
         return session

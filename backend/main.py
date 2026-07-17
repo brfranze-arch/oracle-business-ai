@@ -37,6 +37,7 @@ from routers.openai_router import router as openai_router
 from routers.digital_twin_router import router as digital_twin_router
 from routers.portal_router import router as portal_router
 from routers.portal_ticket_router import router as portal_ticket_router
+from routers.portal_billing_router import router as portal_billing_router
 from portal_seed import seed_portal_catalog
 from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -104,6 +105,7 @@ app.include_router(openai_router)
 app.include_router(digital_twin_router)
 app.include_router(portal_router)
 app.include_router(portal_ticket_router)
+app.include_router(portal_billing_router)
 
 
 def get_db():
