@@ -254,11 +254,11 @@ function renderEnterpriseImportResult(data) {
                 <h3>Test consigliati</h3>
 
                 <p>
-                    Apri Finance e verifica le entrate.
+                    Apri Finanza e verifica le entrate.
                 </p>
 
                 <p>
-                    Apri Customer e verifica i clienti.
+                    Apri Clienti e verifica i clienti.
                 </p>
 
                 <p>
@@ -270,7 +270,7 @@ function renderEnterpriseImportResult(data) {
                 </p>
 
                 <p>
-                    Apri Reports e verifica Predictive e Agents.
+                    Apri Report e verifica Predictive e Agents.
                 </p>
             </div>
         </div>

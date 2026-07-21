@@ -2,7 +2,7 @@ async function runDigitalTwin() {
     const companyId = getCompanyId();
 
     document.getElementById("reportsResult").innerHTML = `
-        <div class="result">Digital Twin Engine sta correlando Finance, Customer, Compliance, Cyber, OSINT, Predictive e Agents...</div>
+        <div class="result">Digital Twin Engine sta correlando Finanza, Clienti, Compliance, Cyber, OSINT, Predictive e Agents...</div>
     `;
 
     const data = await apiPost(`/api/digital-twin/analyze/${companyId}`);
@@ -56,8 +56,8 @@ function digitalTwinSnapshotHtml(s) {
             ${progressBar(score)}
 
             <div class="kpi-grid">
-                ${digitalTwinKpi("Finance", s.finance_index)}
-                ${digitalTwinKpi("Customer", s.customer_index)}
+                ${digitalTwinKpi("Finanza", s.finance_index)}
+                ${digitalTwinKpi("Clienti", s.customer_index)}
                 ${digitalTwinKpi("Compliance", s.compliance_index)}
                 ${digitalTwinKpi("Cyber", s.cyber_index)}
                 ${digitalTwinKpi("OSINT", s.osint_index)}

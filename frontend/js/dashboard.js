@@ -57,26 +57,26 @@ function dashboardTrendLabel(score) {
 }
 
 async function renderDashboard() {
-    setPageTitle("Executive Dashboard 2.0");
+    setPageTitle("Centro Direzionale");
 
     setContent(`
         <div class="dashboard-hero enterprise-hero-v2">
             <div>
-                <div class="eyebrow">Oracle Business AI · Release Candidate</div>
-                <h1>Executive Command Center</h1>
-                <p>Digital intelligence per Finance, Customer, Compliance, Cyber, OSINT, Predictive AI, Billing e Autonomous Agents.</p>
+                <div class="eyebrow">Orizzonte360 · Piattaforma Enterprise</div>
+                <h1>Centro Operativo Aziendale</h1>
+                <p>Intelligenza aziendale per Finanza, Clienti, Compliance, Cyber Security, Monitoraggio Web, Previsioni e Abbonamenti.</p>
             </div>
 
             <div class="hero-actions">
-                <button onclick="loadExecutiveDashboard()">Aggiorna Command Center</button>
-                <button onclick="loadDailyBrief()">Genera Daily Brief</button>
+                <button onclick="loadExecutiveDashboard()">Aggiorna Centro Operativo</button>
+                <button onclick="loadDailyBrief()">Genera Riepilogo Giornaliero</button>
             </div>
         </div>
 
         <div id="dashboardResult">
             <div class="card enterprise-loading-card">
-                <h2>🚀 Caricamento Executive Intelligence</h2>
-                <p>Oracle Business AI sta correlando i dati aziendali.</p>
+                <h2>🚀 Caricamento Centro Direzionale</h2>
+                <p>Il motore Oracle AI sta correlando i dati aziendali.</p>
             </div>
         </div>
     `);
@@ -106,7 +106,7 @@ async function loadExecutiveDashboard() {
     document.getElementById("dashboardResult").innerHTML = `
         <div class="executive-summary-panel">
             <div>
-                <div class="eyebrow">Executive AI Summary</div>
+                <div class="eyebrow">Sintesi Intelligente</div>
                 <h2>${data.company_name}</h2>
                 <p>${executiveMessage}</p>
             </div>
@@ -137,21 +137,21 @@ async function loadExecutiveDashboard() {
             </div>
 
             <div class="kpi enterprise-kpi premium-kpi">
-                <div class="kpi-title">💰 Revenue</div>
+                <div class="kpi-title">💰 Ricavi</div>
                 <div class="kpi-value">${formatEuro(data.total_revenue)}</div>
                 <span class="badge badge-blue">${data.operations} operazioni</span>
                 <small>cash intelligence</small>
             </div>
 
             <div class="kpi enterprise-kpi premium-kpi">
-                <div class="kpi-title">👥 Customer</div>
+                <div class="kpi-title">👥 Clienti</div>
                 <div class="kpi-value counter" data-target="${data.customers}">0</div>
                 <span class="badge badge-blue">Top: ${data.top_customer}</span>
                 <small>customer concentration</small>
             </div>
 
             <div class="kpi enterprise-kpi premium-kpi">
-                <div class="kpi-title">🛡 Cyber Risk</div>
+                <div class="kpi-title">🛡 Rischio Cyber</div>
                 <div class="kpi-value counter" data-target="${data.cyber_score}">0</div>
                 <span class="badge badge-yellow">30d: ${data.attack_probability_30d}%</span>
                 <span class="badge badge-red">90d: ${data.attack_probability_90d}%</span>
@@ -161,7 +161,7 @@ async function loadExecutiveDashboard() {
 
         <div class="grid-2">
             <div class="card enterprise-widget-card">
-                <h2>🧠 Enterprise Widgets</h2>
+                <h2>🧠 Indicatori Enterprise</h2>
                 <div class="widget-grid-mini">
                     <div><b>AI Confidence</b><span>${Math.min(99, Math.round(data.oracle_score + 12))}%</span></div>
                     <div><b>Decision Quality</b><span>${dashboardHealthLabel(data.oracle_score)}</span></div>
@@ -171,7 +171,7 @@ async function loadExecutiveDashboard() {
             </div>
 
             <div class="card enterprise-widget-card">
-                <h2>📡 Live Timeline</h2>
+                <h2>📡 Cronologia Operativa</h2>
                 <div class="timeline-list">
                     ${timeline.map(t => `
                         <div class="timeline-row">
@@ -186,7 +186,7 @@ async function loadExecutiveDashboard() {
 
         <div class="grid-2">
             <div class="card">
-                <h2>🤖 Oracle AI Suggestions</h2>
+                <h2>🤖 Suggerimenti Oracle AI</h2>
                 ${data.suggestions.length > 0
                     ? data.suggestions.map(x => `<div class="action-item"><span>🎯</span><p>${x}</p></div>`).join("")
                     : `<p>Nessuna azione urgente.</p>`
@@ -194,7 +194,7 @@ async function loadExecutiveDashboard() {
             </div>
 
             <div class="card">
-                <h2>⚠️ Risk Center</h2>
+                <h2>⚠️ Centro Rischi</h2>
                 ${data.risks.length > 0
                     ? data.risks.map(x => `<div class="risk-item"><span>⚠️</span><p>${x}</p></div>`).join("")
                     : `<p>Nessun rischio importante rilevato.</p>`
@@ -204,21 +204,21 @@ async function loadExecutiveDashboard() {
 
         <div class="grid-2">
             <div class="card">
-                <h2>🧠 Daily Brief</h2>
-                <button onclick="loadDailyBrief()">Genera Daily Brief AI</button>
+                <h2>🧠 Riepilogo Giornaliero</h2>
+                <button onclick="loadDailyBrief()">Genera Riepilogo Giornaliero AI</button>
                 <div id="dailyBriefInline"></div>
             </div>
 
             <div class="card">
-                <h2>📊 Quick Actions</h2>
-                <button onclick="showPage('reports')">Reports / Predictive / Agents</button>
-                <button onclick="showPage('cyber')">Cyber / OSINT</button>
-                <button onclick="showPage('assistant')">OpenAI Advisor</button>
+                <h2>📊 Azioni Rapide</h2>
+                <button onclick="showPage('reports')">Report / Previsioni / Agenti</button>
+                <button onclick="showPage('cyber')">Cyber Security / Monitoraggio Web</button>
+                <button onclick="showPage('assistant')">Assistente AI</button>
             </div>
         </div>
     `;
 
-    document.getElementById("pageTitle").innerText = "Executive Dashboard 2.0 ✓ aggiornato";
+    document.getElementById("pageTitle").innerText = "Centro Direzionale ✓ aggiornato";
     animateCounters();
 }
 
@@ -235,12 +235,12 @@ function buildExecutiveSummary(data) {
 
 function buildLiveStatus(data) {
     return [
-        { label: "Finance", icon: "💰", status: data.total_revenue > 0 ? "ok" : "warn", text: data.total_revenue > 0 ? "attivo" : "dati bassi" },
-        { label: "Customer", icon: "👥", status: data.customers > 0 ? "ok" : "warn", text: `${data.customers} clienti` },
+        { label: "Finanza", icon: "💰", status: data.total_revenue > 0 ? "ok" : "warn", text: data.total_revenue > 0 ? "attivo" : "dati bassi" },
+        { label: "Clienti", icon: "👥", status: data.customers > 0 ? "ok" : "warn", text: `${data.customers} clienti` },
         { label: "Compliance", icon: "📄", status: data.compliance_items > 0 ? "ok" : "warn", text: `${data.compliance_items} elementi` },
-        { label: "Cyber", icon: "🛡", status: data.attack_probability_30d > 25 ? "danger" : "ok", text: `${data.attack_probability_30d}% 30d` },
+        { label: "Cyber Security", icon: "🛡", status: data.attack_probability_30d > 25 ? "danger" : "ok", text: `${data.attack_probability_30d}% 30d` },
         { label: "OpenAI", icon: "🧠", status: "ok", text: "advisor ready" },
-        { label: "Billing", icon: "💳", status: "ok", text: "SaaS active" }
+        { label: "Abbonamenti", icon: "💳", status: "ok", text: "SaaS active" }
     ];
 }
 
@@ -249,9 +249,9 @@ function buildLiveTimeline(data) {
     const hhmm = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
     return [
         { time: hhmm, title: "Oracle Score", text: `Score aggiornato a ${data.oracle_score}/100.` },
-        { time: hhmm, title: "Finance AI", text: `${data.operations} operazioni analizzate.` },
-        { time: hhmm, title: "Customer", text: `${data.customers} clienti nel workspace.` },
-        { time: hhmm, title: "Cyber Risk", text: `Probabilità 30 giorni: ${data.attack_probability_30d}%.` }
+        { time: hhmm, title: "Finanza AI", text: `${data.operations} operazioni analizzate.` },
+        { time: hhmm, title: "Clienti", text: `${data.customers} clienti nel workspace.` },
+        { time: hhmm, title: "Rischio Cyber", text: `Probabilità 30 giorni: ${data.attack_probability_30d}%.` }
     ];
 }
 

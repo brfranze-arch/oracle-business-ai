@@ -1,9 +1,9 @@
 function renderReports() {
-    setPageTitle("Reports & Timeline");
+    setPageTitle("Report e Timeline");
 
     setContent(`
         <div class="card">
-            <h2>📊 Reports & Timeline AI</h2>
+            <h2>📊 Report e Timeline AI</h2>
             <p>Storico Oracle Score, Cyber Score e andamento aziendale.</p>
 
             <button onclick="loadOracleTimelineReport()">Oracle Timeline</button>

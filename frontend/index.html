@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Oracle Business AI</title>
+  <title>Orizzonte360 — Piattaforma Enterprise</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -10,8 +10,8 @@
 
 <div id="loginPage" class="login-page">
   <div class="login-card">
-    <h1>Oracle Business AI</h1>
-    <p>Enterprise AI Business Intelligence Platform</p>
+    <h1 data-brand-name>Orizzonte360</h1>
+    <p>La tua azienda. Vista a 360°.</p>
 
     <h3>Login</h3>
     <input id="loginEmail" placeholder="Email">
@@ -32,29 +32,30 @@
 
   <aside class="sidebar">
     <div class="logo">
-      <h2>Oracle AI</h2>
-      <span>Business Intelligence</span>
+      <img id="dynamicBrandLogo" hidden alt="Logo brand" style="max-width:180px;max-height:54px"><h2 data-brand-name>ORIZZONTE360</h2>
+      <span>Piattaforma Enterprise</span>
     </div>
 
-<button class="nav-btn active" onclick="showPage('dashboard', this)">🚀 Dashboard</button>
-<button class="nav-btn" onclick="showPage('finance', this)">💰 Finance</button>
-<button class="nav-btn" onclick="showPage('customer', this)">👥 Customer</button>
+<button class="nav-btn active" onclick="showPage('dashboard', this)">🏠 Panoramica</button>
+<button class="nav-btn" onclick="showPage('finance', this)">💰 Finanza</button>
+<button class="nav-btn" onclick="showPage('customer', this)">👥 Clienti</button>
 <button class="nav-btn" onclick="showPage('compliance', this)">📄 Compliance</button>
-<button class="nav-btn" onclick="showPage('cyber', this)">🛡 Cyber</button>
-<button class="nav-btn" onclick="showPage('assistant', this)">🤖 Assistant</button>
-<button class="nav-btn" onclick="showPage('reports', this)">📊 Reports</button>
-<button class="nav-btn" onclick="showPage('billing', this)">💳 Billing</button>
-<button class="nav-btn" onclick="showPage('release', this)">🚀 Release</button>
-<button class="nav-btn" onclick="showPage('import', this)">📂 Import</button>
-<button class="nav-btn" onclick="showPage('settings', this)">⚙️ Settings</button>
+<button class="nav-btn" onclick="showPage('cyber', this)">🛡 Cyber Security</button>
+<button class="nav-btn" onclick="showPage('assistant', this)">🤖 Assistente AI</button>
+<button class="nav-btn" onclick="showPage('reports', this)">📊 Report</button>
+<button class="nav-btn" onclick="showPage('billing', this)">💳 Abbonamenti</button>
+<button class="nav-btn" onclick="showPage('release', this)">🚀 Aggiornamenti</button>
+<button class="nav-btn" onclick="showPage('import', this)">📂 Importazione Dati</button>
+<button class="nav-btn" onclick="showPage('settings', this)">⚙️ Impostazioni</button>
+<button class="nav-btn" onclick="renderWhiteLabel(); document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active')); this.classList.add('active')">🎨 White Label</button>
 
-    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+    <button class="logout-btn" onclick="logoutUser()">Esci</button>
   </aside>
 
   <main class="main">
     <header class="topbar">
       <div>
-        <h1 id="pageTitle">Dashboard</h1>
+        <h1 id="pageTitle">Panoramica</h1>
         <p id="userInfo"></p>
       </div>
 
@@ -67,7 +68,7 @@
   </button>
 
   <div id="notificationPanel" class="notification-panel hidden">
-    <h3>Notification Center</h3>
+    <h3>Centro Notifiche</h3>
     <div id="notificationBox"></div>
   </div>
 </div>
@@ -95,6 +96,7 @@
 <script src="js/import.js"></script>
 <script src="js/tenant.js"></script>
 <script src="js/settings.js"></script>
+<script src="js/white-label.js"></script>
 
 </body>
 </html>

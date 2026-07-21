@@ -1,12 +1,12 @@
 function renderSettings() {
-    setPageTitle("Settings");
+    setPageTitle("Impostazioni");
 
     const userRaw = localStorage.getItem("oracle_user");
     const user = userRaw ? JSON.parse(userRaw) : null;
 
     setContent(`
         <div class="card">
-            <h2>⚙️ Settings</h2>
+            <h2>⚙️ Impostazioni</h2>
             <p>Gestione account, workspace e aziende collegate al tenant selezionato.</p>
 
             <div class="grid-2">

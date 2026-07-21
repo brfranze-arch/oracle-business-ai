@@ -1,6 +1,8 @@
 import billing_models
 import portal_license_models
 import portal_ticket_models
+import partner_models
+import white_label_models
 from enterprise_import_engine import import_enterprise_workbook
 from agents_models import AgentRun
 from agents_engine import (
@@ -38,6 +40,8 @@ from routers.digital_twin_router import router as digital_twin_router
 from routers.portal_router import router as portal_router
 from routers.portal_ticket_router import router as portal_ticket_router
 from routers.portal_billing_router import router as portal_billing_router
+from routers.partner_router import router as partner_router
+from routers.white_label_router import router as white_label_router
 from portal_seed import seed_portal_catalog
 from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -89,7 +93,7 @@ with SessionLocal() as db:
     seed_default_plans(db)
     seed_portal_catalog(db)
 
-app = FastAPI(title="Oracle Business AI")
+app = FastAPI(title="Orizzonte360 API", version="4.0.0")
 
 security = HTTPBearer(auto_error=False)
 
@@ -106,6 +110,8 @@ app.include_router(digital_twin_router)
 app.include_router(portal_router)
 app.include_router(portal_ticket_router)
 app.include_router(portal_billing_router)
+app.include_router(partner_router)
+app.include_router(white_label_router)
 
 
 def get_db():

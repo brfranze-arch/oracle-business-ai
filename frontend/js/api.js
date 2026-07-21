@@ -1,4 +1,4 @@
-const API = "https://oracle-business-ai-backend.onrender.com";
+const API = "http://127.0.0.1:8000";
 
 function token() {
     return localStorage.getItem("oracle_token");

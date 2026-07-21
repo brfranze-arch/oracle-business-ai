@@ -3,7 +3,7 @@ function renderRelease() {
 
     setContent(`
         <div class="card">
-            <h2>🚀 Oracle Business AI RC1</h2>
+            <h2>🚀 Orizzonte360 Enterprise v1.0</h2>
             <p>Centro controllo release, stato moduli e checklist finale Enterprise.</p>
 
             <button onclick="loadReleaseStatus()">Carica stato release</button>
@@ -129,7 +129,7 @@ async function loadReleaseStatus() {
                 <p>✅ Login/Auth</p>
                 <p>✅ Billing Stripe</p>
                 <p>✅ Multi Tenant</p>
-                <p>✅ Dashboard Enterprise</p>
+                <p>✅ Centro Direzionale Enterprise</p>
                 <p>✅ OpenAI Advisor</p>
                 <p>✅ OSINT</p>
                 <p>✅ Predictive AI</p>
@@ -182,7 +182,7 @@ async function loadReleaseStatus() {
 
 <div class="result">
     <h3>📌 Release Notes RC1</h3>
-    <p><b>Versione:</b> Oracle Business AI RC1</p>
+    <p><b>Versione:</b> Orizzonte360 Enterprise v1.0</p>
     <p><b>Stato:</b> Release Candidate stabile</p>
     <p><b>Moduli inclusi:</b> Billing, Multi Tenant, OpenAI, OSINT, Predictive AI, Autonomous Agents, Digital Twin.</p>
     <p><b>Deploy:</b> Render + PostgreSQL + Stripe + OpenAI API.</p>
@@ -211,7 +211,7 @@ function releaseBadge(label, active) {
 
 function exportReleaseSnapshot() {
     const snapshot = {
-        product: "Oracle Business AI",
+        product: "Orizzonte360",
         version: "RC1",
         date: new Date().toISOString(),
         status: "READY",
@@ -345,7 +345,7 @@ function getRC1FinalStatus(healthScore) {
             label: "READY",
             readiness: 100,
             badge: "badge-green",
-            message: "Oracle Business AI RC1 è pronta per demo e validazione clienti."
+            message: "Orizzonte360 Enterprise v1.0 è pronta per demo e validazione clienti."
         };
     }
 
@@ -553,7 +553,7 @@ function exportRC1Diagnostics() {
     addReleaseAudit("Exported RC1 diagnostics");
 
     const report = {
-        product: "Oracle Business AI",
+        product: "Orizzonte360",
         version: "RC1",
         generated_at: new Date().toISOString(),
         tenant_id: getTenantId(),
@@ -577,7 +577,7 @@ function exportRC1Diagnostics() {
 }
 
 const ORACLE_RELEASE_INFO = {
-    product: "Oracle Business AI",
+    product: "Orizzonte360",
     version: "1.0.0-RC1",
     channel: "release-candidate",
     frontend: "Enterprise Web",

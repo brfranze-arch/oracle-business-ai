@@ -1,9 +1,9 @@
 function renderFinance() {
-    setPageTitle("Finance Oracle AI");
+    setPageTitle("Finanza · Oracle AI");
 
     setContent(`
         <div class="card">
-            <h2>💰 Finance Oracle AI</h2>
+            <h2>💰 Finanza · Oracle AI</h2>
             <p>Entrate, metodi di pagamento, riepilogo finanziario e analisi AI.</p>
 
             <div class="grid-2">
@@ -23,9 +23,9 @@ function renderFinance() {
                 </div>
 
                 <div>
-                    <h3>Azioni Finance</h3>
+                    <h3>Azioni Finanza</h3>
                     <button onclick="loadFinanceSummary()">Riepilogo entrate</button>
-                    <button onclick="analyzeFinance()">Analisi AI Finance</button>
+                    <button onclick="analyzeFinance()">Analisi AI Finanza</button>
                     <button onclick="loadOracleScoreFinance()">Oracle Score</button>
                 </div>
             </div>
@@ -88,7 +88,7 @@ async function loadFinanceSummary() {
 
     document.getElementById("financeResult").innerHTML = `
         <div class="card">
-            <h3>Riepilogo Finance</h3>
+            <h3>Riepilogo Finanziario</h3>
 
             <div class="kpi-grid">
                 <div class="kpi">
@@ -176,7 +176,7 @@ async function loadOracleScoreFinance() {
             ${progressBar(oracleScore)}
 
             <div class="result">
-                <h3>Finance Score</h3>
+                <h3>Punteggio Finanza</h3>
                 <b>${financeScore}/100</b>
                 ${progressBar(financeScore)}
             </div>

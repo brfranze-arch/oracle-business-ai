@@ -549,3 +549,44 @@ input,textarea,select{
     .summary-score-card{width:100%;}
     .hero-actions{justify-content:flex-start;}
 }
+
+
+/* Orizzonte360 Enterprise v1.0 */
+.login-card{
+    border:1px solid rgba(56,189,248,.28);
+    background:linear-gradient(160deg,rgba(17,24,39,.98),rgba(15,23,42,.98));
+}
+.login-card h1{
+    font-size:34px;
+    letter-spacing:-1px;
+}
+.logo h2{
+    letter-spacing:1.5px;
+}
+.enterprise-skeleton{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+}
+.enterprise-skeleton span{
+    display:block;
+    min-height:92px;
+    border-radius:14px;
+    background:linear-gradient(90deg,#0f172a 25%,#1e293b 50%,#0f172a 75%);
+    background-size:200% 100%;
+    animation:o360Skeleton 1.35s infinite linear;
+}
+@keyframes o360Skeleton{
+    from{background-position:200% 0}
+    to{background-position:-200% 0}
+}
+@media (max-width:900px){
+    .sidebar{width:220px}
+    #pageContent{padding:18px}
+    .topbar{gap:12px;align-items:flex-start}
+}
+:root{--brand-primary:#2563EB;--brand-secondary:#0F172A;--brand-accent:#22C55E;--brand-background:#F8FAFC}
+body{background:var(--brand-background)}
+.sidebar,.login-card button,.main button{--o360-current-brand:var(--brand-primary)}
+.nav-btn.active,.login-card button,.main button:not(.notification-btn){background-color:var(--brand-primary)}
+.logo h2{color:var(--brand-primary)}

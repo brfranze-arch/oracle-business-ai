@@ -1,9 +1,9 @@
 function renderBilling() {
-    setPageTitle("Billing SaaS");
+    setPageTitle("Abbonamenti");
 
     setContent(`
         <div class="card">
-            <h2>💳 Oracle Billing</h2>
+            <h2>💳 Abbonamenti Orizzonte360</h2>
             <p>Gestione piano, trial, permessi e upgrade SaaS.</p>
 
             <button onclick="loadBillingMe()">Carica piano attuale</button>
@@ -176,7 +176,7 @@ async function changeBillingPlan(planName) {
                 Piano attuale: <b>${safeValue(data.plan)}</b>
             </div>
 
-            <button onclick="loadBillingMe()">Ricarica Billing</button>
+            <button onclick="loadBillingMe()">Ricarica Abbonamenti</button>
         </div>
     `;
 }

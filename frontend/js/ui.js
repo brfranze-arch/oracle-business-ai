@@ -37,8 +37,8 @@ if (protectedPages.includes(page)) {
     }
 
     if (page === "reports" && !permissions.reports) {
-        setPageTitle("Reports");
-        upgradeBlock("Reports & Timeline", "PROFESSIONAL");
+        setPageTitle("Report");
+        upgradeBlock("Report e Timeline", "PROFESSIONAL");
         return;
     }
 
@@ -159,11 +159,11 @@ function upgradeBlock(moduleName, requiredPlan = "PROFESSIONAL") {
             <p>Questo modulo è disponibile dal piano <b>${requiredPlan}</b>.</p>
 
             <div class="result">
-                Per sbloccare questa funzione, vai nella sezione Billing e aggiorna il piano.
+                Per sbloccare questa funzione, vai nella sezione Abbonamenti e aggiorna il piano.
             </div>
 
             <button onclick="showPage('billing')">
-                Vai a Billing
+                Vai ad Abbonamenti
             </button>
         </div>
     `);
@@ -192,11 +192,11 @@ function companyBlockedScreen() {
             <p>L'azienda selezionata non appartiene al workspace corrente.</p>
 
             <div class="result">
-                Vai in Settings, carica le aziende del workspace e seleziona un'azienda valida.
+                Vai in Impostazioni, carica le aziende del workspace e seleziona un'azienda valida.
             </div>
 
             <button onclick="showPage('settings')">
-                Vai a Settings
+                Vai a Impostazioni
             </button>
         </div>
     `);

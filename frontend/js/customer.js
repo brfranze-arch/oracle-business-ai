@@ -1,9 +1,9 @@
 function renderCustomer() {
-    setPageTitle("Customer Oracle AI");
+    setPageTitle("Clienti · Oracle AI");
 
     setContent(`
         <div class="card">
-            <h2>👥 Customer Oracle AI</h2>
+            <h2>👥 Clienti · Oracle AI</h2>
             <p>Clienti, concentrazione fatturato e customer intelligence.</p>
 
             <div class="grid-2">
@@ -18,7 +18,7 @@ function renderCustomer() {
                 </div>
 
                 <div>
-                    <h3>Azioni Customer</h3>
+                    <h3>Azioni Clienti</h3>
                     <button onclick="loadCustomers()">Carica clienti</button>
                     <button onclick="analyzeCustomerAi()">Analisi Customer AI</button>
                     <button onclick="loadCustomerInsights()">Insights salvati</button>
@@ -110,7 +110,7 @@ async function analyzeCustomerAi() {
 
     document.getElementById("customerResult").innerHTML = `
         <div class="card">
-            <h3>Customer Oracle AI</h3>
+            <h3>Clienti · Oracle AI</h3>
 
             <span class="badge ${badgeClass(level)}">${level}</span>
 
