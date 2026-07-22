@@ -46,6 +46,7 @@ from routers.white_label_router import router as white_label_router
 from routers.marketplace_router import router as marketplace_router
 from routers.enterprise_admin_router import router as enterprise_admin_router
 from marketplace_seed import seed_marketplace
+from enterprise_admin_bootstrap import bootstrap_enterprise_admin
 from portal_seed import seed_portal_catalog
 from fastapi import FastAPI, Depends, Header, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -97,8 +98,13 @@ with SessionLocal() as db:
     seed_default_plans(db)
     seed_portal_catalog(db)
     seed_marketplace(db)
+    admin_bootstrap = bootstrap_enterprise_admin(db)
+    if admin_bootstrap.get("status") == "created":
+        print(f"Enterprise Super Admin creato: {admin_bootstrap['email']}")
+    elif admin_bootstrap.get("status") == "exists":
+        print(f"Enterprise Super Admin già presente: {admin_bootstrap['email']}")
 
-app = FastAPI(title="Orizzonte360 API", version="5.0.1")
+app = FastAPI(title="Orizzonte360 API", version="5.0.2")
 
 security = HTTPBearer(auto_error=False)
 
