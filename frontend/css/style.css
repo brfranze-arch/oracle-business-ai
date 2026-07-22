@@ -590,3 +590,6 @@ body{background:var(--brand-background)}
 .sidebar,.login-card button,.main button{--o360-current-brand:var(--brand-primary)}
 .nav-btn.active,.login-card button,.main button:not(.notification-btn){background-color:var(--brand-primary)}
 .logo h2{color:var(--brand-primary)}
+
+/* PACK 05A Marketplace */
+.market-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.metric-value{font-size:34px;font-weight:800}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-grid textarea{min-height:110px;grid-column:1/-1}@media(max-width:800px){.form-grid{grid-template-columns:1fr}}

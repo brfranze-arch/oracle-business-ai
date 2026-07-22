@@ -13,12 +13,12 @@
     <h1 data-brand-name>Orizzonte360</h1>
     <p>La tua azienda. Vista a 360°.</p>
 
-    <h3>Login</h3>
+    <h3>Accesso Enterprise</h3>
     <input id="loginEmail" placeholder="Email">
     <input id="loginPassword" type="password" placeholder="Password">
     <button onclick="loginUser()">Login</button>
 
-    <h3>Registrazione</h3>
+    <h3>Registrazione cliente</h3>
     <input id="registerName" placeholder="Nome">
     <input id="registerEmail" placeholder="Email">
     <input id="registerPassword" type="password" placeholder="Password">
@@ -47,6 +47,7 @@
 <button class="nav-btn" onclick="showPage('release', this)">🚀 Aggiornamenti</button>
 <button class="nav-btn" onclick="showPage('import', this)">📂 Importazione Dati</button>
 <button class="nav-btn" onclick="showPage('settings', this)">⚙️ Impostazioni</button>
+<button class="nav-btn" onclick="showPage('marketplace', this)">🧩 Marketplace</button>
 <button class="nav-btn" onclick="renderWhiteLabel(); document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active')); this.classList.add('active')">🎨 White Label</button>
 
     <button class="logout-btn" onclick="logoutUser()">Esci</button>
@@ -97,6 +98,7 @@
 <script src="js/tenant.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/white-label.js"></script>
+<script src="js/marketplace.js"></script>
 
 </body>
 </html>
